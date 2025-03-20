@@ -26,7 +26,7 @@ const PaymentManagementLists = () => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ category: "", name: "" });
   const [editId, setEditId] = useState(null);
-
+console.log(formData)
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem("paymentData")) || {};
     setData(storedData);

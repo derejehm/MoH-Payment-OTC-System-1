@@ -11,7 +11,6 @@ import {
   Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { toast } from "react-toastify";
 
 const AddPatientInfo = ({
   isOpen,
@@ -27,13 +26,24 @@ const AddPatientInfo = ({
     age: "",
     phone: "",
   });
-
+  const [phoneError, setPhoneError] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
   };
 
+  const handleClose = () => {
+    onClose();
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === "phone") {
+      validatePhoneNumber(e.target.value);
+    }
+    if(e.target.name === 'fullName')
+    {
+
+    }
   };
 
   useEffect(() => {
@@ -41,6 +51,32 @@ const AddPatientInfo = ({
       handleClose();
     }
   }, [isOpen]);
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^(?:\+251|09|07)\d+$/;
+    if (!phoneRegex.test(phone)) {
+      setPhoneError(
+        "Phone number must start with +251, 09, or 07 and contain only numbers."
+      );
+    } else {
+      if (phone.startsWith("+251") && phone.length !== 13) {
+        setPhoneError("Phone number starting with +251 must have 13 digits.");
+      } else if (
+        (phone.startsWith("09") || phone.startsWith("07")) &&
+        phone.length !== 10
+      ) {
+        setPhoneError(
+          "Phone number starting with 09 or 07 must have 10 digits."
+        );
+      } else {
+        setPhoneError("");
+      }
+    }
+  };
+
+  const validateFullname = (fullName)=>{
+     const regex = /[A-Za-z\s]*/
+  }
 
   return (
     <Modal
@@ -65,7 +101,7 @@ const AddPatientInfo = ({
         <Grid>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
-              <Grid item xs={4}>
+              <Grid item xs={8}>
                 <TextField
                   fullWidth
                   label="Full Name"
@@ -78,7 +114,7 @@ const AddPatientInfo = ({
                   //   helperText={usernameError}
                 />
               </Grid>
-              <Grid item xs={8}>
+              <Grid item xs={4}>
                 <TextField
                   fullWidth
                   label="Gender"
@@ -102,12 +138,12 @@ const AddPatientInfo = ({
               value={formData.phone}
               onChange={handleChange}
               margin="normal"
-              //   error={!!phoneError}
-              //   helperText={phoneError}
+              error={!!phoneError}
+              helperText={phoneError}
               required
             />
             <Grid container spacing={2}>
-              <Grid item xs={4}>
+              <Grid item xs={8}>
                 <TextField
                   fullWidth
                   label="Address"
@@ -121,7 +157,7 @@ const AddPatientInfo = ({
                 />
               </Grid>
 
-              <Grid item xs={8}>
+              <Grid item xs={4}>
                 <TextField
                   fullWidth
                   label="Age"

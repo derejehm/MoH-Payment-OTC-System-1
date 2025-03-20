@@ -82,15 +82,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "payment-types",
-        element: (
-          <ProtectedRoute
-            element={<h1>Coming Soon...</h1>}
-            allowedRoles={["Admin"]}
-          />
-        ),
-      },
-      {
         path: "payments",
         element: (
           <ProtectedRoute

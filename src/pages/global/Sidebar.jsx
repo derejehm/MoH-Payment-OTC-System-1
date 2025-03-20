@@ -47,6 +47,8 @@ const Sidebar = () => {
     <Box
       sx={{
         position:"fixed",
+        zIndex:"5",
+        height:"100vh",
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
         },
@@ -172,13 +174,6 @@ const Sidebar = () => {
                   title="Payment Channels"
                   to="/payment-channel"
                   icon={<AccountBalanceWalletOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Payment Types"
-                  to="/payment-types"
-                  icon={<PaymentOutlinedIcon />}
                   selected={selected}
                   setSelected={setSelected}
                 />

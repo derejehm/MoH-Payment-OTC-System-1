@@ -19,7 +19,7 @@ function RootLayout() {
         {token ? (
           <Box className="app" alignContent="flex">
             <Sidebar isSidebar={isSidebar} />
-            <main className="content">
+            <main className="content" style={{marginLeft:"270px"}}>
               <Topbar setIsSidebar={setIsSidebar} />
               <Outlet />
             </main>

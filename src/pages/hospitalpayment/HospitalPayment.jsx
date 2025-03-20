@@ -16,12 +16,12 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { DataGrid } from "@mui/x-data-grid";
 import { jsPDF } from "jspdf";
 import ReceiptModal from "./ReceiptModal";
-import SmartCards from "./SmartCards";
-import Receipt from "./Receipt";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getTokenValue } from "../../services/user_service";
 import api from "../../utils/api";
+import AddPatientInfo from "../../components/AddPatientInfo";
+import { use } from "react";
 
 const tokenvalue = getTokenValue();
 
@@ -63,6 +63,7 @@ const HospitalPayment = () => {
   const [paymentMethods, setPaymentMehods] = useState([]);
   const [digitalChannels, setDigitalChannels] = useState([]);
   const [reasons, setReasons] = useState([]);
+  const [isAdditonalInfo,setIsAdditionalInfo] = useState(false);
   const [currentNumber, setCurrentNumber] = useState(() => {
     const savedNumber = localStorage.getItem("currentReceiptNumber");
     return savedNumber ? parseInt(savedNumber, 10) : 1;
@@ -163,9 +164,7 @@ const HospitalPayment = () => {
   const handleChange = (e) => {
     try {
       setFormData({ ...formData, [e.target.name]: e.target.value });
-      if (e.target.name === "cardNumber") {
-        handleNumberOnlyCheck(e.target.name, e.target.value);
-      }
+
       if (e.target.name === "trxref") {
         validateTransactionRef(e.target.value);
       }
@@ -466,7 +465,7 @@ const HospitalPayment = () => {
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`TOTAL`, 40, yPos);
+      doc.text(`TOTAL`, 20, yPos);
       doc.text(`${totalAmount ? totalAmount.toFixed(2) : "0.00"}`, 160, yPos);
       yPos += 10;
 
@@ -512,8 +511,6 @@ const HospitalPayment = () => {
     { field: "purpose", headerName: "Reason", width: 200 },
   ];
 
-
-
   const handleOpenPage = async () => {
     try {
       const receptId = formData?.trxref;
@@ -540,7 +537,9 @@ const HospitalPayment = () => {
       console.error(error.message);
     }
   };
-
+const handleAdditionalUser = ()=>{
+setIsAdditionalInfo(true)
+}
   return (
     <Container>
       <Typography variant="h5" gutterBottom>
@@ -557,7 +556,41 @@ const HospitalPayment = () => {
             error={!!cardNumberError}
             helperText={cardNumberError}
             margin="normal"
+            variant="outlined"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px", // Rounded edges for a modern look
+                backgroundColor: "#f9f9f9", // Subtle background color
+                "&:hover fieldset": {
+                  borderColor: "info.main", // Changes border color on hover
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "primary.main", // Focus effect
+                  boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                },
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Button
+                    variant="contained"
+                    color="info"
+                    onClick={handleAdditionalUser}
+                    sx={{
+                      borderRadius: "20px", // More rounded button
+                      fontWeight: "bold",
+                      textTransform: "none", // Removes uppercase
+                      padding: "6px 16px",
+                    }}
+                  >
+                    Additional
+                  </Button>
+                </InputAdornment>
+              ),
+            }}
           />
+
           <Typography variant="subtitle1" gutterBottom>
             Select Reason:
           </Typography>
@@ -592,6 +625,19 @@ const HospitalPayment = () => {
                 min: 1, // Prevents negative values
                 step: "any", // Allows decimal values
               }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px", // Rounded edges for a modern look
+                  backgroundColor: "#f9f9f9", // Subtle background color
+                  "&:hover fieldset": {
+                    borderColor: "info.main", // Changes border color on hover
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "primary.main", // Focus effect
+                    boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                  },
+                },
+              }}
             />
           ))}
 
@@ -603,6 +649,37 @@ const HospitalPayment = () => {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px", // Rounded edges for a modern look
+                backgroundColor: "#f9f9f9", // Subtle background color
+                "&:hover fieldset": {
+                  borderColor: "info.main", // Changes border color on hover
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "primary.main", // Focus effect
+                  boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                },
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Button
+                    variant="contained"
+                    color="info"
+                    sx={{
+                      borderRadius: "20px", // More rounded button
+                      fontWeight: "bold",
+                      textTransform: "none", // Removes uppercase
+                      padding: "6px 16px",
+                    }}
+                  >
+                    Additional
+                  </Button>
+                </InputAdornment>
+              ),
+            }}
           >
             {paymentMethods?.map((method) => (
               <MenuItem key={method} value={method}>
@@ -621,6 +698,19 @@ const HospitalPayment = () => {
                 fullWidth
                 required
                 margin="normal"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px", // Rounded edges for a modern look
+                    backgroundColor: "#f9f9f9", // Subtle background color
+                    "&:hover fieldset": {
+                      borderColor: "info.main", // Changes border color on hover
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "primary.main", // Focus effect
+                      boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                    },
+                  },
+                }}
               >
                 {digitalChannels?.map((channel) => (
                   <MenuItem key={channel} value={channel}>
@@ -638,6 +728,19 @@ const HospitalPayment = () => {
                 fullWidth
                 required
                 margin="normal"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px", // Rounded edges for a modern look
+                    backgroundColor: "#f9f9f9", // Subtle background color
+                    "&:hover fieldset": {
+                      borderColor: "info.main", // Changes border color on hover
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "primary.main", // Focus effect
+                      boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                    },
+                  },
+                }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -660,6 +763,19 @@ const HospitalPayment = () => {
               fullWidth
               required
               margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px", // Rounded edges for a modern look
+                  backgroundColor: "#f9f9f9", // Subtle background color
+                  "&:hover fieldset": {
+                    borderColor: "info.main", // Changes border color on hover
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "primary.main", // Focus effect
+                    boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                  },
+                },
+              }}
             >
               {woredas?.map((woreda) => (
                 <MenuItem key={woreda} value={woreda}>
@@ -678,6 +794,19 @@ const HospitalPayment = () => {
               required
               fullWidth
               margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px", // Rounded edges for a modern look
+                  backgroundColor: "#f9f9f9", // Subtle background color
+                  "&:hover fieldset": {
+                    borderColor: "info.main", // Changes border color on hover
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "primary.main", // Focus effect
+                    boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                  },
+                },
+              }}
             >
               {organizations.map((org) => (
                 <MenuItem key={org} value={org}>
@@ -694,6 +823,19 @@ const HospitalPayment = () => {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px", // Rounded edges for a modern look
+                backgroundColor: "#f9f9f9", // Subtle background color
+                "&:hover fieldset": {
+                  borderColor: "info.main", // Changes border color on hover
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "primary.main", // Focus effect
+                  boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
+                },
+              },
+            }}
           />
           <Button
             variant="contained"
@@ -744,7 +886,6 @@ const HospitalPayment = () => {
               </Typography>
             </Box>
           </Paper>
-
         </Box>
       </Paper>
       <Paper sx={{ height: 400 }}>
@@ -763,6 +904,13 @@ const HospitalPayment = () => {
         data={receiptData}
         onPrint={handleRegisterAndPrint}
       />
+      <AddPatientInfo
+        isOpen ={isAdditonalInfo}
+        onClose ={()=>setIsAdditionalInfo(false)}
+        // onSubmit ={}
+        // userData ={}
+        // resetUserData ={}
+        />
       <ToastContainer />
     </Container>
   );
