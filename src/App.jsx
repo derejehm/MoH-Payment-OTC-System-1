@@ -27,6 +27,7 @@ import BankerComponent from './pages/supervisors/BankerComponent.jsx'
 import DynamicFieldsForm from './pages/hospitalpayment/DynamicFieldsForm.jsx'
 import FinancialDashboard from "./components/FinancialDashboard.jsx";
 import useTokenCheck from "./services/useTokenCheck.js";
+import PaymentManagementLists from "./components/PaymentManagementLists.jsx";
 
 
 const tokenvalue = getTokenValue()
@@ -75,7 +76,7 @@ const router = createBrowserRouter([
         path: "payment-channel",
         element: (
           <ProtectedRoute
-            element={<h1>Coming Soon...</h1>}
+            element={<PaymentManagementLists/>}
             allowedRoles={["Admin"]}
           />
         ),
