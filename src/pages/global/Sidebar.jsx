@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -41,14 +41,27 @@ const Sidebar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selected, setSelected] = useState("Dashboard");
+  const [selected, setSelected] = useState(() => {
+    const storedCurrentPage = localStorage.getItem("currentNav");
+    try {
+      return storedCurrentPage ? JSON.parse(storedCurrentPage) : "Dashboard";
+    } catch (error) {
+      return "Dashboard";
+    }
+  });
+
+  useEffect(() => {
+    if (selected) {
+      localStorage.setItem("currentNav", JSON.stringify(selected));
+    }
+  }, [selected]);
 
   return (
     <Box
       sx={{
-        position:"fixed",
-        zIndex:"5",
-        height:"100vh",
+        position: "fixed",
+        zIndex: "5",
+        height: "100vh",
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
         },
@@ -65,9 +78,8 @@ const Sidebar = () => {
           color: "#6870fa !important",
         },
       }}
-
     >
-      <ProSidebar collapsed={isCollapsed} >
+      <ProSidebar collapsed={isCollapsed}>
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
@@ -156,17 +168,17 @@ const Sidebar = () => {
                 />
               </>
             )}
-            {role?.toUpperCase() === "ADMIN" ||
+            {(role?.toUpperCase() === "ADMIN" ||
               (role?.toUpperCase() === "USER" &&
-                tokenvalue?.UserType?.toUpperCase() === "CASHER" && (
-                  <Typography
-                    variant="h6"
-                    color={colors.grey[300]}
-                    sx={{ m: "15px 0 5px 20px" }}
-                  >
-                    Payment Management
-                  </Typography>
-                ))}
+                tokenvalue?.UserType?.toUpperCase() === "CASHER")) && (
+              <Typography
+                variant="h6"
+                color={colors.grey[300]}
+                sx={{ m: "15px 0 5px 20px" }}
+              >
+                Payment Management
+              </Typography>
+            )}
 
             {role?.toUpperCase() === "ADMIN" && (
               <>

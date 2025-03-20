@@ -11,13 +11,13 @@ import {
   Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddPatientInfo = ({
   isOpen,
   onClose,
   onSubmit,
-  userData,
-  resetUserData,
 }) => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -27,22 +27,50 @@ const AddPatientInfo = ({
     phone: "",
   });
   const [phoneError, setPhoneError] = useState("");
+  const [fnameError, setFnameError] = useState("");
+  const [addrError, setAddrError] = useState("");
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if(phoneError || fnameError || addrError)
+    {
+      toast.error('Please fix The Errors First')
+      return
+    }
+    onSubmit(formData);
   };
 
   const handleClose = () => {
+    setFormData({
+      fullName: "",
+      gender: "",
+      address: "",
+      age: "",
+      phone: "",
+    })
+    setPhoneError("");
+    setFnameError("");
+    setAddrError("");
     onClose();
   };
 
+  
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === "age" && e.target.value < 0) {
+      setFormData({ ...formData, [e.target.name]: Math.abs(e.target.value) });
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+
     if (e.target.name === "phone") {
       validatePhoneNumber(e.target.value);
     }
-    if(e.target.name === 'fullName')
-    {
-
+    if (e.target.name === "fullName") {
+      validateFullname(e.target.value);
+    }
+    if (e.target.name === "address") {
+      validateAddres(e.target.value);
     }
   };
 
@@ -74,9 +102,27 @@ const AddPatientInfo = ({
     }
   };
 
-  const validateFullname = (fullName)=>{
-     const regex = /[A-Za-z\s]*/
-  }
+  const validateFullname = (fullName) => {
+    const regex = /^[A-Za-z]+(?:\s[A-Za-z]+)+$/;
+    if (!regex.test(fullName)) {
+      setFnameError(
+        "Please Insert Valid Full Name eg. Alice Johnson or Alice Johnson Doe"
+      );
+    } else {
+      setFnameError("");
+    }
+  };
+  const validateAddres = (address) => {
+    const regex = /^[a-zA-Z0-9\s,.'#-]+$/;
+    if (!regex.test(address)) {
+      setAddrError(
+        "Please Insert Valid address eg. 123 Main St or 456 Elm Street, Apt 7 or 789-B Oak Ave"
+      );
+    } else {
+      setAddrError("");
+    }
+  };
+  const genders = ["Male", "Female", "Unknown"];
 
   return (
     <Modal
@@ -110,12 +156,13 @@ const AddPatientInfo = ({
                   onChange={handleChange}
                   margin="normal"
                   required
-                  //   error={!!usernameError}
-                  //   helperText={usernameError}
+                  error={!!fnameError}
+                  helperText={fnameError}
                 />
               </Grid>
               <Grid item xs={4}>
                 <TextField
+                  select
                   fullWidth
                   label="Gender"
                   name="gender"
@@ -126,7 +173,13 @@ const AddPatientInfo = ({
                   required
                   //   error={!!emailError}
                   //   helperText={emailError}
-                />
+                >
+                  {genders.map((gend, index) => (
+                    <MenuItem key={index} value={gend}>
+                      {gend}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
             </Grid>
 
@@ -152,8 +205,8 @@ const AddPatientInfo = ({
                   onChange={handleChange}
                   margin="normal"
                   required
-                  //   error={!!phoneError}
-                  //   helperText={phoneError}
+                  error={!!addrError}
+                  helperText={addrError}
                 />
               </Grid>
 
@@ -167,6 +220,10 @@ const AddPatientInfo = ({
                   onChange={handleChange}
                   margin="normal"
                   required
+                  inputProps={{
+                    min: 1, // Prevents negative values
+                    step: "any", // Allows decimal values
+                  }}
                 />
               </Grid>
             </Grid>
@@ -175,7 +232,7 @@ const AddPatientInfo = ({
                 Close
               </Button>
               <Button type="submit" variant="contained" color="primary">
-                Add Patient
+                Add Patient Info
               </Button>
             </Box>
           </form>
