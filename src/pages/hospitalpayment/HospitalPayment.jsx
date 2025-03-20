@@ -503,7 +503,7 @@ const HospitalPayment = () => {
       headerName: "Payment Method",
       width: 150,
       renderCell: (params) => (
-        <Typography color={params.row.type === "CASH" ? "green" : "orange"}>
+        <Typography color={params.row.type === "CASH" ? "green" : params.row.type === "Credit" ? "red" : "black"}>
           {params.row.type}
         </Typography>
       ),
@@ -537,8 +537,26 @@ const HospitalPayment = () => {
       console.error(error.message);
     }
   };
+
 const handleAdditionalUser = ()=>{
 setIsAdditionalInfo(true)
+}
+
+const handleAddtionalPAtientInfo = async(Data)=>{
+  try{
+    if(formData.cardNumber.length <= 0 || cardNumberError)
+    {
+      toast.error('Please fill out The Card Number First');
+      return
+    }else{
+      console.log("Additional Patient information>>",Data,formData.cardNumber)
+      setIsAdditionalInfo(false)
+    }
+
+  }catch(error)
+  {
+    console.error(error.message)
+  }
 }
   return (
     <Container>
@@ -584,7 +602,7 @@ setIsAdditionalInfo(true)
                       padding: "6px 16px",
                     }}
                   >
-                    Additional
+                    Optional
                   </Button>
                 </InputAdornment>
               ),
@@ -662,24 +680,7 @@ setIsAdditionalInfo(true)
                 },
               },
             }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    variant="contained"
-                    color="info"
-                    sx={{
-                      borderRadius: "20px", // More rounded button
-                      fontWeight: "bold",
-                      textTransform: "none", // Removes uppercase
-                      padding: "6px 16px",
-                    }}
-                  >
-                    Additional
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
+
           >
             {paymentMethods?.map((method) => (
               <MenuItem key={method} value={method}>
@@ -775,6 +776,24 @@ setIsAdditionalInfo(true)
                     boxShadow: "0px 0px 8px rgba(0, 0, 255, 0.2)", // Nice glow
                   },
                 },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Button
+                      variant="contained"
+                      color="info"
+                      sx={{
+                        borderRadius: "20px", // More rounded button
+                        fontWeight: "bold",
+                        textTransform: "none", // Removes uppercase
+                        padding: "6px 16px",
+                      }}
+                    >
+                      Optional
+                    </Button>
+                  </InputAdornment>
+                ),
               }}
             >
               {woredas?.map((woreda) => (
@@ -907,9 +926,7 @@ setIsAdditionalInfo(true)
       <AddPatientInfo
         isOpen ={isAdditonalInfo}
         onClose ={()=>setIsAdditionalInfo(false)}
-        // onSubmit ={}
-        // userData ={}
-        // resetUserData ={}
+        onSubmit ={handleAddtionalPAtientInfo}
         />
       <ToastContainer />
     </Container>

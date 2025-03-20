@@ -20,8 +20,13 @@ function RootLayout() {
           <Box className="app" alignContent="flex">
             <Sidebar isSidebar={isSidebar} />
             <main className="content" style={{marginLeft:"270px"}}>
+              <div style={{position: "fixed",  width: "-moz-available",backgroundColor:"rgba(10,10,10,0.01) !important"}}>
               <Topbar setIsSidebar={setIsSidebar} />
+              </div>
+              <div style={{marginTop:"74px"}}>
               <Outlet />
+              </div>
+              
             </main>
           </Box>
         ) :

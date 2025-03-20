@@ -23,6 +23,7 @@ export async function getUserDetails() {
 
 export function logout() {
   localStorage.removeItem(tokenName);
+  localStorage.removeItem("currentNav")
   return (window.location.href = window.location.origin + "/login");
 }
 

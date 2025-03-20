@@ -149,7 +149,6 @@ const UserManagment = () => {
           ...user,
           orderNumber: index + 1,
         }));
-        console.log(usersWithOrder)
         setRows(usersWithOrder);
       } catch (error) {
         console.error(error.message);
