@@ -170,7 +170,7 @@ const Sidebar = () => {
             )}
             {(role?.toUpperCase() === "ADMIN" ||
               (role?.toUpperCase() === "USER" &&
-                tokenvalue?.UserType?.toUpperCase() === "CASHER")) && (
+                tokenvalue?.UserType?.toUpperCase() === "CASHIER")) && (
               <Typography
                 variant="h6"
                 color={colors.grey[300]}
@@ -192,7 +192,7 @@ const Sidebar = () => {
               </>
             )}
             {role?.toUpperCase() === "USER" &&
-              tokenvalue?.UserType?.toUpperCase() === "CASHER" && (
+              (tokenvalue?.UserType?.toUpperCase() === "CASHIER" || tokenvalue?.UserType?.toUpperCase() === "SUPERVISOR")&& (
                 <>
                   <Item
                     title="Payments"

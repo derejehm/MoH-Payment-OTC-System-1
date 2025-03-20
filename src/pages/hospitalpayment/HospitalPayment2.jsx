@@ -15,7 +15,7 @@ import { jsPDF } from "jspdf";
 import ReceiptModal from "./ReceiptModal";
 import SmartCards from "./SmartCards";
 
-const paymentMethods = ["Cash", "Digital", "CBHI", "Free Service", "Credit"];
+const paymentMethods = ["Cash", "Digital", "(CBHI)", "Free Service", "Credit"];
 const digitalChannels = [
   "CBE Mobile Banking",
   "Tele Birr",
@@ -193,7 +193,7 @@ const HospitalPayment = () => {
     if (data.method === "Digital") {
       doc.text(`Channel      : ${data.digitalChannel}`, 20, 60);
     }
-    if (data.method === "CBHI") {
+    if (data.method === "(CBHI)") {
       doc.text(`Woreda      : ${data.woreda}`, 20, 60);
     }
     if (data.method === "Credit") {
@@ -308,7 +308,7 @@ const HospitalPayment = () => {
               ))}
             </TextField>
           )}
-          {formData.method === "CBHI" && (
+          {formData.method === "(CBHI)" && (
             <TextField
               select
               label="Woreda"

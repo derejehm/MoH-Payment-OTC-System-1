@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
 import { Button, Box } from "@mui/material";
+import { useLang } from "../contexts/LangContext";
+
+
 
 const LanguageToggle = () => {
-  const [language, setLanguage] = useState("EN");
+  const {language,setLanguage} = useLang()
+ 
+
 
   return (
     <Box

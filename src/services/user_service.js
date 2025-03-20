@@ -10,7 +10,6 @@ export async function login(payload) {
     username: payload.username,
     password: payload.password,
   });
-  console.log('Response is =',response.data)
   return { ...response.data };
 }
 

@@ -8,33 +8,30 @@ import Login from "./login";
 import { getSession } from "../services/user_service";
 
 function RootLayout() {
-  const token = getSession()
+  const token = getSession();
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
 
-  return <>
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {token ? (
-          <Box className="app" alignContent="flex">
-            <Sidebar isSidebar={isSidebar} />
-            <main className="content" style={{marginLeft:"270px"}}>
-              <div style={{position: "fixed",  width: "-moz-available",backgroundColor:"rgba(10,10,10,0.01) !important"}}>
-              <Topbar setIsSidebar={setIsSidebar} />
-              </div>
-              <div style={{marginTop:"74px"}}>
-              <Outlet />
-              </div>
-              
-            </main>
-          </Box>
-        ) :
-          <Login />
-        }
-      </ThemeProvider>
-    </ColorModeContext.Provider>
-  </>
+  return (
+    <>
+      <ColorModeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          {token ? (
+            <Box className="app" alignContent="flex">
+              <Sidebar isSidebar={isSidebar} />
+              <main className="content" style={{ marginLeft: "270px" }}>
+                <Topbar setIsSidebar={setIsSidebar} />
+                <Outlet />
+              </main>
+            </Box>
+          ) : (
+            <Login />
+          )}
+        </ThemeProvider>
+      </ColorModeContext.Provider>
+    </>
+  );
 }
 
 export default RootLayout;

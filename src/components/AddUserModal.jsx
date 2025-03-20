@@ -41,7 +41,7 @@ const AddUserModal = ({
 
   const departments = ["Card", "Pharmacy", "Hospital", "Tsedey Bank"];
   const hospitals = ["DB Tena tabiya", "DB Referal Hopital"];
-  const usertypes = ["Casher", "Supervisor", "Admin"];
+  const usertypes = ["Cashier", "Supervisor", "Admin"];
   // Reset form data when modal is closed
   const handleClose = () => {
     setFormData({
@@ -89,7 +89,7 @@ const AddUserModal = ({
   };
 
   const validateUsername = (username) => {
-    const usernameRegex = /^[A-Za-z][A-Za-z0-9]{1,}$/;
+    const usernameRegex = /^[A-Za-z][A-Za-z0-9]{3,}$/;
     if (!usernameRegex.test(username)) {
       setUsernameError(
         "Username must start with a letter, be at least 3 characters long, and contain no spaces."
@@ -140,7 +140,7 @@ const AddUserModal = ({
 
       if (
         formData.department === "Tsedey Bank" &&
-        formData.usertype === "Casher"
+        formData.usertype === "Cashier"
       ) {
         toast.error(`Bank can't have Cashier user Type`);
         return;

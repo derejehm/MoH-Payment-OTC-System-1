@@ -21,8 +21,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { getTokenValue } from "../../services/user_service";
 import api from "../../utils/api";
 import AddPatientInfo from "../../components/AddPatientInfo";
-import { use } from "react";
-
+import { useLang } from "../../contexts/LangContext";
+import AddCBHIInfo from "../../components/AddCBHIInfo";
 const tokenvalue = getTokenValue();
 
 const woredas = ["Woreda 1", "Woreda 2", "Woreda 3"]; // Add relevant woredas
@@ -40,6 +40,8 @@ const formatAccounting = (num) => {
 };
 
 const HospitalPayment = () => {
+  const { language } = useLang();
+
   const [payments, setPayments] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -63,7 +65,8 @@ const HospitalPayment = () => {
   const [paymentMethods, setPaymentMehods] = useState([]);
   const [digitalChannels, setDigitalChannels] = useState([]);
   const [reasons, setReasons] = useState([]);
-  const [isAdditonalInfo,setIsAdditionalInfo] = useState(false);
+  const [isAdditonalInfo, setIsAdditionalInfo] = useState(false);
+  const [isAdditonalCBHIInfo, setIsAdditionalCBHIInfo] = useState(false);
   const [currentNumber, setCurrentNumber] = useState(() => {
     const savedNumber = localStorage.getItem("currentReceiptNumber");
     return savedNumber ? parseInt(savedNumber, 10) : 1;
@@ -262,7 +265,7 @@ const HospitalPayment = () => {
         (formData.method === "Digital" &&
           !formData.digitalChannel &&
           !formData.trxref) ||
-        (formData.method === "CBHI" && !formData.woreda) ||
+        (formData.method === "(CBHI)" && !formData.woreda) ||
         (formData.method === "Credit" && !formData.organization)
       ) {
         return window.alert("Please fill all the necessary fields!!");
@@ -321,6 +324,7 @@ const HospitalPayment = () => {
       );
 
       if (response.status === 201) {
+        console.log("trx>>", response?.data?.refNo);
         setReceiptOpen(false);
         setFormData({
           cardNumber: "",
@@ -335,14 +339,14 @@ const HospitalPayment = () => {
         });
         toast.success(response?.data?.message);
         setRefresh((prev) => !prev);
-        generatePDF(newPayment);
+        generatePDF(newPayment,response?.data?.refNo);
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const generatePDF = (data) => {
+  const generatePDF = (data,refNo) => {
     try {
       const doc = new jsPDF();
 
@@ -363,6 +367,12 @@ const HospitalPayment = () => {
       doc.setFont("helvetica", "bold");
       doc.text(tokenvalue?.Hospital, 105, yPos, { align: "center" });
       yPos += 8;
+
+      //Tiket Number
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Tiket NO: ${refNo}`, 20, yPos);
+      yPos += 6;
 
       // Address and Date
       doc.setFontSize(10);
@@ -407,7 +417,7 @@ const HospitalPayment = () => {
         doc.setFont("helvetica", "normal");
         doc.text(`${data.trxref || "N/A"}`, 70, yPos);
         yPos += 8;
-      } else if (data.method === "Community-Based Health Insurance (CBHI)") {
+      } else if (data.method === "(CBHI)") {
         doc.setFont("helvetica", "bold");
         doc.text(`Woreda:`, 20, yPos);
         doc.setFont("helvetica", "normal");
@@ -503,7 +513,15 @@ const HospitalPayment = () => {
       headerName: "Payment Method",
       width: 150,
       renderCell: (params) => (
-        <Typography color={params.row.type === "CASH" ? "green" : params.row.type === "Credit" ? "red" : "black"}>
+        <Typography
+          color={
+            params.row.type === "CASH"
+              ? "green"
+              : params.row.type === "Credit"
+              ? "red"
+              : "black"
+          }
+        >
           {params.row.type}
         </Typography>
       ),
@@ -538,35 +556,80 @@ const HospitalPayment = () => {
     }
   };
 
-const handleAdditionalUser = ()=>{
-setIsAdditionalInfo(true)
-}
+  const handleAdditionalUser = () => {
+    setIsAdditionalInfo(true);
+  };
 
-const handleAddtionalPAtientInfo = async(Data)=>{
-  try{
-    if(formData.cardNumber.length <= 0 || cardNumberError)
-    {
-      toast.error('Please fill out The Card Number First');
-      return
-    }else{
-      console.log("Additional Patient information>>",Data,formData.cardNumber)
-      setIsAdditionalInfo(false)
+  const handleAdditionalCBHI = () => {
+    setIsAdditionalCBHIInfo(true);
+  };
+
+  const handleAddtionalPAtientInfo = async (Data) => {
+    try {
+      if (formData.cardNumber.length <= 0 || cardNumberError) {
+        toast.error("Please fill out The Card Number First");
+        return;
+      } else {
+        const response = await api.post("/Payment/add-patient-info", {
+          patientCardNumber: formData?.cardNumber,
+          patientName: Data.fullName,
+          patientGender: Data.gender,
+          patientAddress: Data.address,
+          patientAge: Number(Data.age),
+          createdBy: tokenvalue?.name,
+        });
+        console.log(response.data);
+        if (response.status === 201) {
+          toast.success("");
+          setIsAdditionalInfo(false);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Internal Server Error!!");
     }
+  };
 
-  }catch(error)
-  {
-    console.error(error.message)
-  }
-}
+  const handleAddtionalCBHIInfo = async (Data) => {
+    try {
+      if (formData.cardNumber.length <= 0  ) {
+        toast.error("Please fill out The Card Number First");
+        return;
+      } else if(formData.woreda.length <= 0 ){
+        toast.error("Please fill out Woreda First");
+        return;
+      }else {
+        console.log(Data,formData.cardNumber,formData.woreda)
+        setIsAdditionalCBHIInfo(true);
+        // const response = await api.post("/Payment/add-patient-info", {
+        //   patientCardNumber: formData?.cardNumber,
+        //   patientName: Data.fullName,
+        //   patientGender: Data.gender,
+        //   patientAddress: Data.address,
+        //   patientAge: Number(Data.age),
+        //   createdBy: tokenvalue?.name,
+        // });
+
+        // if (response.status === 201) {
+        //   toast.success("");
+        //   setIsAdditionalInfo(false);
+        // }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Internal Server Error!!");
+    }
+  };
+
   return (
     <Container>
       <Typography variant="h5" gutterBottom>
-        Hospital Payment Management
+        {language === "AMH" ? "የክፍያ መቆጣጠሪያ" : "Hospital Payment Management"}
       </Typography>
       <Paper sx={{ padding: 2, marginBottom: 2, display: "flex", gap: 2 }}>
         <Box sx={{ flex: 1 }}>
           <TextField
-            label="Card Number"
+            label={language === "AMH" ? "የካርድ ቁጥርቁጥር" : "Card Number"}
             name="cardNumber"
             value={formData.cardNumber}
             onChange={handleChange}
@@ -578,7 +641,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "10px", // Rounded edges for a modern look
-                backgroundColor: "#f9f9f9", // Subtle background color
+
                 "&:hover fieldset": {
                   borderColor: "info.main", // Changes border color on hover
                 },
@@ -610,7 +673,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
           />
 
           <Typography variant="subtitle1" gutterBottom>
-            Select Reason:
+            {language === "AMH" ? "ምክንያት" : "Select Reason:"}
           </Typography>
           {reasons?.map((reason) => (
             <FormControlLabel
@@ -646,7 +709,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px", // Rounded edges for a modern look
-                  backgroundColor: "#f9f9f9", // Subtle background color
+
                   "&:hover fieldset": {
                     borderColor: "info.main", // Changes border color on hover
                   },
@@ -670,7 +733,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "10px", // Rounded edges for a modern look
-                backgroundColor: "#f9f9f9", // Subtle background color
+
                 "&:hover fieldset": {
                   borderColor: "info.main", // Changes border color on hover
                 },
@@ -680,7 +743,6 @@ const handleAddtionalPAtientInfo = async(Data)=>{
                 },
               },
             }}
-
           >
             {paymentMethods?.map((method) => (
               <MenuItem key={method} value={method}>
@@ -702,7 +764,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "10px", // Rounded edges for a modern look
-                    backgroundColor: "#f9f9f9", // Subtle background color
+
                     "&:hover fieldset": {
                       borderColor: "info.main", // Changes border color on hover
                     },
@@ -732,7 +794,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "10px", // Rounded edges for a modern look
-                    backgroundColor: "#f9f9f9", // Subtle background color
+
                     "&:hover fieldset": {
                       borderColor: "info.main", // Changes border color on hover
                     },
@@ -754,7 +816,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
               ></TextField>
             </>
           )}
-          {formData?.method === "Community-Based Health Insurance (CBHI)" && (
+          {formData?.method.trim() === "(CBHI)" && (
             <TextField
               select
               label="Woreda"
@@ -767,7 +829,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px", // Rounded edges for a modern look
-                  backgroundColor: "#f9f9f9", // Subtle background color
+
                   "&:hover fieldset": {
                     borderColor: "info.main", // Changes border color on hover
                   },
@@ -783,6 +845,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
                     <Button
                       variant="contained"
                       color="info"
+                      onClick={handleAdditionalCBHI}
                       sx={{
                         borderRadius: "20px", // More rounded button
                         fontWeight: "bold",
@@ -816,7 +879,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px", // Rounded edges for a modern look
-                  backgroundColor: "#f9f9f9", // Subtle background color
+
                   "&:hover fieldset": {
                     borderColor: "info.main", // Changes border color on hover
                   },
@@ -845,7 +908,7 @@ const handleAddtionalPAtientInfo = async(Data)=>{
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "10px", // Rounded edges for a modern look
-                backgroundColor: "#f9f9f9", // Subtle background color
+
                 "&:hover fieldset": {
                   borderColor: "info.main", // Changes border color on hover
                 },
@@ -924,10 +987,15 @@ const handleAddtionalPAtientInfo = async(Data)=>{
         onPrint={handleRegisterAndPrint}
       />
       <AddPatientInfo
-        isOpen ={isAdditonalInfo}
-        onClose ={()=>setIsAdditionalInfo(false)}
-        onSubmit ={handleAddtionalPAtientInfo}
-        />
+        isOpen={isAdditonalInfo}
+        onClose={() => setIsAdditionalInfo(false)}
+        onSubmit={handleAddtionalPAtientInfo}
+      />
+      <AddCBHIInfo
+        isOpen={isAdditonalCBHIInfo}
+        onClose={() => setIsAdditionalCBHIInfo(false)}
+        onSubmit={handleAddtionalCBHIInfo}
+      />
       <ToastContainer />
     </Container>
   );

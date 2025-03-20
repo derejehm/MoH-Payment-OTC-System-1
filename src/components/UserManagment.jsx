@@ -189,13 +189,19 @@ const UserManagment = () => {
         toast.success(response?.data?.message);
         setRefresh((prev) => !prev);
         handleReset();
+        setModalOpen(false);
       }
     } catch (error) {
-      console.error(error.message);
-      toast.error(error?.response?.data?.message || "Internal Server Error.");
-    } finally {
-      setModalOpen(false);
-    }
+      console.error(error);
+      if(Array.isArray( error?.response?.data))
+      {
+        error?.response?.data?.map(item=>toast.error(item.description))
+      }else{
+        toast.error(error?.response?.data?.message  || "Internal Server Error.");
+      }
+      
+      
+    } 
   };
 
   const handleEditSubmit = async (editedUserData) => {

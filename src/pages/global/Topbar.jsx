@@ -20,7 +20,7 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import Logout from "@mui/icons-material/Logout";
 import { getTokenValue } from "../../services/user_service";
-
+import { LanguageToggle } from "../../components";
 const tokenvalue = getTokenValue()
 
 
@@ -38,8 +38,19 @@ const Topbar = () => {
   const handleProfile = () => navigate("/profile");
   const handleLogout = () => navigate("/logout");
 
+const handleToggleLanguage =()=>{
+  console.log('clicked')
+  // if (localStorage.getItem('lang') === "EN")
+  // {
+  //   localStorage.setItem("lang",'AMH')
+  // }else{
+  //   localStorage.setItem("lang",'EN')
+  // }
+
+}
+
   return session ? (
-    <Box display="flex" justifyContent="space-between" p={2}>
+    <Box display="flex" justifyContent="space-between" p={2} >
       {/* SEARCH BAR */}
       <Box
         display="flex"
@@ -50,6 +61,7 @@ const Topbar = () => {
         <IconButton type="button" sx={{ p: 1 }}>
           <SearchIcon />
         </IconButton>
+        
       </Box>
 
       {/* ICONS */}
@@ -63,6 +75,7 @@ const Topbar = () => {
         </IconButton>
         <IconButton>
           <NotificationsOutlinedIcon />
+          {/* <LanguageToggle onClick={handleToggleLanguage}/> */}
         </IconButton>
         <IconButton>
           <SettingsOutlinedIcon />
