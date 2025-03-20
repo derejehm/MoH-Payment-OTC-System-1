@@ -10,86 +10,40 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
+import { GetAllPaymentByDate } from "../../services/report_service";
+import { getTokenValue } from "../../services/user_service";
+
 
 const paymentMethods = [
   "All",
-  "Cash",
+  "CASH",
   "Digital",
   "CBHI",
   "Free Service",
   "Credit",
 ];
-const mockData = [
-  {
-    id: 1,
-    cardNumber: "123456",
-    amount: 500,
-    method: "Cash",
-    reason: "Routine Checkup",
-    description: "General consultation fee",
-    date: "2025-03-15",
-  },
-  {
-    id: 2,
-    cardNumber: "789012",
-    amount: 1200,
-    method: "Digital",
-    reason: "Surgery",
-    description: "Pre-surgery payment",
-    date: "2025-03-15",
-  },
-  {
-    id: 3,
-    cardNumber: "345678",
-    amount: 800,
-    method: "CBHI",
-    reason: "Emergency",
-    description: "Emergency treatment",
-    date: "2025-03-16",
-  },
-  {
-    id: 4,
-    cardNumber: "901234",
-    amount: 400,
-    method: "Free Service",
-    reason: "Vaccination",
-    description: "Government-sponsored vaccination",
-    date: "2025-03-16",
-  },
-  {
-    id: 5,
-    cardNumber: "567890",
-    amount: 1000,
-    method: "Credit",
-    reason: "Maternity",
-    description: "Hospital maternity charges",
-    date: "2025-03-17",
-  },
-];
 
 const ReportPage = () => {
-  const [payments, setPayments] = useState(() => {
-    const storedPayments = localStorage.getItem("hospitalPayments");
-    return storedPayments ? JSON.parse(storedPayments) : mockData;
-  });
+  const [payments, setPayments] = useState([]);
 
   const [selectedMethod, setSelectedMethod] = useState("All");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filteredPayments, setFilteredPayments] = useState(payments);
+  
+  
+var tokenValue=getTokenValue();
 
-  useEffect(() => {
-    localStorage.setItem("hospitalPayments", JSON.stringify(payments));
-  }, [payments]);
+  // useEffect(() => {
+  //   localStorage.setItem("hospitalPayments", JSON.stringify(payments));
+  // }, [payments]);
+
 
   useEffect(() => {
     setFilteredPayments(
       payments.filter(
         (payment) =>
-          (selectedMethod === "All" || payment.method === selectedMethod) &&
-          (!startDate ||
-            !endDate ||
-            (payment.date >= startDate && payment.date <= endDate))
+          (selectedMethod === "All" || payment.type === selectedMethod) 
       )
     );
   }, [selectedMethod, startDate, endDate, payments]);
@@ -102,10 +56,7 @@ const ReportPage = () => {
     return payments
       .filter(
         (payment) =>
-          (method === "All" || payment.method === method) &&
-          (!startDate ||
-            !endDate ||
-            (payment.date >= startDate && payment.date <= endDate))
+          (method === "All" || payment.type === method) 
       )
       .reduce((sum, payment) => sum + Number(payment.amount), 0); // Ensure amount is treated as a number
   };
@@ -121,24 +72,45 @@ const ReportPage = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 90 },
+  
+    { field: "refNo", headerName: "Ref No.", width: 200 },
+    { field: "hospitalName", headerName: "Hospital Name", width: 150 },
     { field: "cardNumber", headerName: "Card Number", width: 150 },
+    { field: "purpose", headerName: "Service", width: 150 },    
     { field: "amount", headerName: "Amount", width: 120 },
-    { field: "method", headerName: "Payment Method", width: 150 },
-    { field: "reason", headerName: "Reason", width: 200 },
+    { field: "type", headerName: "Payment Method", width: 150 },
     { field: "description", headerName: "Description", width: 200 },
-    { field: "date", headerName: "Date", width: 150 },
-  ];
-  const handleReportRequest = async()=>{
-    console.log({startDate:startDate,endDate:endDate,selectedMethod:selectedMethod})
-  }
+    { field: "createdOn", headerName: "Date", width: 150 },
+    { field: "createdby", headerName: "Created by", width: 150 },
 
+    
+  ];
+  const handleReportRequest = async () => {
+    try {
+      const datas = await GetAllPaymentByDate({
+        startDate,
+        endDate,
+        user: tokenValue.name,
+      });
+      setPayments(datas);
+
+      setFilteredPayments(
+        payments.filter(
+          (payment) =>
+            (selectedMethod === "All" || payment.type === selectedMethod) 
+        )
+      );
+  
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    }
+  };
   return (
-    <Container>
-      <Typography variant="h5" gutterBottom>
+   <>
+      <Typography variant="h5" gutterBottom sx={{ margin: 2 }}>
         Payment Reports
       </Typography>
-      <Paper sx={{ padding: 2, marginBottom: 2 }}>
+      <Paper sx={{ padding: 2, margin: 2 }}>
         <TextField
           label="Start Date"
           type="date"
@@ -180,7 +152,7 @@ const ReportPage = () => {
           ))}
         </Tabs>
       </Paper>
-      <Paper sx={{ height: 400, marginBottom: 2 }}>
+      <Paper sx={{ height: 400, margin: 2 }}>
         <DataGrid
           rows={filteredPayments.length ? filteredPayments : []}
           columns={columns}
@@ -188,15 +160,16 @@ const ReportPage = () => {
           rowsPerPageOptions={[5, 10, 20]}
         />
       </Paper>
-      <Button
+      <Button     
+      sx={{ marginLeft: 2 }}
         variant="contained"
         color="primary"
-        fullWidth
+    
         onClick={exportToExcel}
       >
         Export to Excel
       </Button>
-    </Container>
+      </>
   );
 };
 
