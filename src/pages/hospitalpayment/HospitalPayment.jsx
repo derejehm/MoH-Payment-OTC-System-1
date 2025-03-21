@@ -324,7 +324,6 @@ const HospitalPayment = () => {
       );
 
       if (response.status === 201) {
-        console.log("trx>>", response?.data?.refNo);
         setReceiptOpen(false);
         setFormData({
           cardNumber: "",
@@ -371,17 +370,17 @@ const HospitalPayment = () => {
       //Tiket Number
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Tiket NO: ${refNo}`, 20, yPos);
+      doc.text(`Recietp NO: ${refNo}`, 20, yPos);
       yPos += 6;
 
       // Address and Date
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Address: Lorem Ipsum 8/24`, 20, yPos);
+      doc.text(`Address: Debre Brihan`, 20, yPos);
       yPos += 6;
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPos);
       yPos += 6;
-      doc.text(`Manager: Lorem Ipsum`, 20, yPos);
+      doc.text(`Cashier: ${tokenvalue?.name}`, 20, yPos);
       yPos += 10;
 
       // Separator Line
@@ -578,9 +577,8 @@ const HospitalPayment = () => {
           patientAge: Number(Data.age),
           createdBy: tokenvalue?.name,
         });
-        console.log(response.data);
         if (response.status === 201) {
-          toast.success("");
+          toast.success(`${response?.data?.patientName} Is Registered Success Fully!`);
           setIsAdditionalInfo(false);
         }
       }

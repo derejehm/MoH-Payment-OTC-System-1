@@ -1,2 +1,2 @@
-# Tsedey Banke
+# Tsedey Bank
 

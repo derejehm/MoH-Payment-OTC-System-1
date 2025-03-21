@@ -10,10 +10,18 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import AgreementDialog from "./AgreementDialog";
+import api from "../utils/api";
+import { getTokenValue } from "../services/user_service";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { jsPDF } from "jspdf";
+import { TonalitySharp } from "@mui/icons-material";
+
+const tokenvalue = getTokenValue();
 
 const COLORS = ["#00C49F", "#FF8042"];
 
-const PaymentStatusCard = ({ title, amount, trend }) => {
+const PaymentStatusCard = ({ title, amount, trend, status }) => {
   return (
     <Card>
       <CardContent>
@@ -25,7 +33,7 @@ const PaymentStatusCard = ({ title, amount, trend }) => {
         </Typography>
         <Box display="flex" alignItems="center" mt={2}>
           <Typography variant="body2" color="textSecondary">
-            {trend}% from last month
+            {trend}% {status}
           </Typography>
         </Box>
       </CardContent>
@@ -37,55 +45,203 @@ const FinancialDashboard = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
-  const initialTransactions = [
-    { id: 1, startDate: "2024-01-01", endDate: "2024-01-31", amount: 5000, status: "collected" },
-    { id: 2, startDate: "2024-02-01", endDate: "2024-02-28", amount: 7000, status: "uncollected" },
-    { id: 3, startDate: "2024-03-01", endDate: "2024-03-31", amount: 6000, status: "collected" },
-  ];
-  
+  // Collection table data
+  // useEffect(() => {
+
+  //   fetchColl();
+  // }, []);
+
+
   useEffect(() => {
-    const storedTransactions = JSON.parse(localStorage.getItem("transactions"));
-    if (!storedTransactions) {
-      localStorage.setItem("transactions", JSON.stringify(initialTransactions));
-      setTransactions(initialTransactions);
-    } else {
-      setTransactions(storedTransactions);
+    const fetchColl1 = async () => {
+      try {
+        const response1 = await api.get(
+          `/Collection/uncollected/${tokenvalue.name}`
+        );
+         console.log("unclolleted>>",response1?.data)
+        const updatedUncollectedData =
+          response1?.data?.map(({ uncollectedCashAmount, ...rest }) => ({
+            collectedAmount: uncollectedCashAmount,
+            ...rest,
+          })) || [];
+
+
+        const fetchColl = async () => {
+          try {
+            const response2 = await api.get(
+              `/Collection/collection/${tokenvalue.name}`
+            );
+            const updatedCollectedData =
+              response2?.data?.map(({ collectionId, ...rest }) => ({
+                id: collectionId,
+                ...rest,
+              })) || [];
+
+            return updatedCollectedData
+              .map((prev) => ({ ...prev, status: "collected" }))
+              .sort((a, b) => b.id - a.id);
+          } catch (error) {
+            console.error(
+              "Error fetching collected transactions:",
+              error.message
+            );
+            return [];
+          }
+        };
+
+        const collected = await fetchColl();
+          
+        const maxId =
+          collected.length > 0
+            ? Math.max(...collected.map((item) => item.id))
+            : 0;
+
+        const transform = updatedUncollectedData.map((prev, index) => ({
+          ...prev,
+          id: maxId + index + 1,
+        }));
+
+        const transform2 = transform.map((prev) => ({
+          ...prev,
+          status: "uncollected",
+          collectedOn: "",
+          collectedBy: "",
+        }));
+
+        const final = [...collected, ...transform2].sort((a, b) => b.id - a.id);
+        setTransactions(final);
+      } catch (error) {
+        console.error("Error in fetchColl1:", error.message);
+      }
+    };
+
+    fetchColl1();
+  }, [refresh]);
+
+
+  const generatePDF = (data,amount) => {
+    try {
+      const doc = new jsPDF();
+
+      // Set initial position
+      let yPos = 20;
+
+      // Add Header
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("AGREEMENT PAPER", 105, yPos, { align: "center" });
+      yPos += 8;
+
+      // Separator Line
+      doc.setLineWidth(0.5);
+      doc.line(20, yPos, 190, yPos);
+      yPos += 10;
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`HOSPITAL NAME:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${tokenvalue?.Hospital || "N/A"}`, 100, yPos);
+      yPos += 8;
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`CASHIER NAME:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${tokenvalue?.name || "N/A"}`, 100, yPos);
+      yPos += 8;
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`BANKER ID:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${data?.empId || "N/A"}`, 100, yPos);
+      yPos += 8;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("BANKER NAME:", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${data?.empName || "N/A"}`, 100, yPos);
+      yPos += 8;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("MONEY AMOUNT:", 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${amount || "N/A"}`, 100, yPos);
+      yPos += 8;
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`RECEIVED DATE:`, 20, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${data?.signature || "N/A"}`, 100, yPos);
+      yPos += 20;
+
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        `I confirm this agreement paper and agree to the terms of service`,
+        40,
+        yPos
+      );
+      yPos += 20;
+
+      // SIGNATURE LINE
+      doc.setFont("helvetica", "normal");
+      doc.text(`CASHIER:`, 20, yPos);
+      doc.setLineWidth(0.5);
+      doc.line(45, yPos, 95, yPos);
+
+      doc.setFont("helvetica", "normal");
+      doc.text(`BANKER:`, 115, yPos);
+      doc.setLineWidth(0.5);
+      doc.line(140, yPos, 190, yPos);
+      yPos += 10;
+
+
+      // Save PDF
+      doc.save(
+        `${data?.signature || "unknown date"}_aggrement_between_${tokenvalue?.name || "unknown cashier"}_and_${data?.empName || "unknown banker"}_on_${amount?amount:"unknown amount"}_money.pdf`
+      );
+    } catch (error) {
+      console.error(error.message);
     }
-  }, []);
+  };
 
 
-  const handleSubmit = async(data)=>{
-    console.log('Recived Data>> ',data,selectedTransaction)
-    initialTransactions.map((prev)=>({
-      ...prev,
-         
-    }))
-    const updatedTransactions = initialTransactions.map((transaction) =>
-      transaction.id === selectedTransaction.id
-        ? { ...transaction, status: "collected" } // Update specific attribute
-        : transaction // Keep other transactions unchanged
-    );
-    // const finalResult = {empId:data.empId, empName: data.empName, signature: data.signature, cashier: data.cashier,
-    //   // d: 2, startDate: '2024-02-01', endDate: '2024-02-28', amount: 7000, status: 'uncollected'
-    // }
-    localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-  }
+  const handleSubmit = async (data) => {
+    try {
+      const response = await api.post("/Collection/collection", {
+        collectedBy: data.empName,
+        collectedOn: data.signature,
+        collectedAmount: selectedTransaction.collectedAmount,
+        fromDate: selectedTransaction.fromDate,
+        toDate: selectedTransaction.toDate,
+        casher: tokenvalue.name,
+      });
+      if (response.status === 201) {
+        toast.success("Cash Collected Successfully!")
+        setRefresh((prev)=>!prev)
+        generatePDF(data,selectedTransaction.collectedAmount)
+        setSelectedTransaction(null)
 
-  
-
-  useEffect(() => {
-    const storedTransactions =
-      JSON.parse(localStorage.getItem("transactions")) || [];
-    setTransactions(storedTransactions);
-  }, []);
+        setOpenDialog(false);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data || "Internal Server Error!")
+    }
+  };
 
   const collected = transactions
     .filter((t) => t.status === "collected")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + t.collectedAmount, 0);
   const uncollected = transactions
     .filter((t) => t.status === "uncollected")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + t.collectedAmount, 0);
+
+  const collectedTrend = (collected * 100) / (collected + uncollected);
+
+  const uncollectedTrend = (uncollected * 100) / (collected + uncollected);
 
   const handleCollectPayment = (transaction) => {
     setSelectedTransaction(transaction);
@@ -94,10 +250,10 @@ const FinancialDashboard = () => {
 
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5, minWidth: 50 },
-    { field: "startDate", headerName: "Start Date", flex: 1, minWidth: 120 },
-    { field: "endDate", headerName: "End Date", flex: 1, minWidth: 120 },
+    { field: "fromDate", headerName: "Start Date", flex: 1, minWidth: 120 },
+    { field: "toDate", headerName: "End Date", flex: 1, minWidth: 120 },
     {
-      field: "amount",
+      field: "collectedAmount",
       headerName: "Amount",
       flex: 1,
       minWidth: 120,
@@ -115,6 +271,13 @@ const FinancialDashboard = () => {
           {params.row.status}
         </Typography>
       ),
+    },
+    { field: "collectedBy", headerName: "Collector", flex: 1, minWidth: 120 },
+    {
+      field: "collectedOn",
+      headerName: "Collected Date",
+      flex: 1,
+      minWidth: 120,
     },
     {
       field: "actions",
@@ -150,14 +313,16 @@ const FinancialDashboard = () => {
           <PaymentStatusCard
             title="Total Collected"
             amount={collected}
-            trend={12.5}
+            trend={collectedTrend.toFixed(2)}
+            status={"Collected"}
           />
         </Grid>
         <Grid item xs={12} md={4}>
           <PaymentStatusCard
             title="Total Uncollected"
             amount={uncollected}
-            trend={-4.3}
+            trend={uncollectedTrend.toFixed(2)}
+            status={"Uncollected"}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -212,8 +377,9 @@ const FinancialDashboard = () => {
         onClose={() => setOpenDialog(false)}
         selectedTransaction={selectedTransaction}
         BackdropProps={{ style: { backgroundColor: "rgba(0, 0, 0, 0.5)" } }}
-        onSubmit = {handleSubmit}
+        onSubmit={handleSubmit}
       />
+      <ToastContainer/>
     </Box>
   );
 };

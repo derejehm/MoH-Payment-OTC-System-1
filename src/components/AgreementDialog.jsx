@@ -72,7 +72,6 @@ const AgreementDialog = ({
   const handleSubmit = (e) => {
     // Handle agreement submission
     e.preventDefault();
-    setSignature("");
     onSubmit(formData);
   };
 
@@ -91,6 +90,7 @@ const AgreementDialog = ({
 
 
   };
+ 
 
   return (
     <>
@@ -109,7 +109,7 @@ const AgreementDialog = ({
       <form onSubmit={handleSubmit} style={{ width: "100%" }}>
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Amount to Collect: ${selectedTransaction?.amount}
+            Amount to Collect: ${selectedTransaction?.collectedAmount}
           </Typography>
           <Divider sx={{ my: 2 }} />
 
@@ -120,7 +120,7 @@ const AgreementDialog = ({
                 onChange={(e) => setAgreed(e.target.checked)}
               />
             }
-            label="I confirm receipt of the payment and agree to the terms of service"
+            label="I confirm this agreement paper and agree to the terms of service"
           />
           <TextField
             fullWidth
