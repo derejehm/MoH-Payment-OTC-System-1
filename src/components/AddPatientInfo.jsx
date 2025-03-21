@@ -18,6 +18,8 @@ const AddPatientInfo = ({
   isOpen,
   onClose,
   onSubmit,
+  userData,
+  resetUserData,
 }) => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -30,16 +32,29 @@ const AddPatientInfo = ({
   const [fnameError, setFnameError] = useState("");
   const [addrError, setAddrError] = useState("");
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    if(phoneError || fnameError || addrError)
-    {
-      toast.error('Please fix The Errors First')
-      return
+    if (phoneError || fnameError || addrError) {
+      toast.error("Please fix The Errors First");
+      return;
     }
     onSubmit(formData);
   };
+  const isNumber = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
+  useEffect(() => {
+    if (userData !== undefined || Object.entries(userData).length > 0) {
+      setFormData({
+        fullName: userData?.patientName,
+        gender: genders.includes(userData?.patientGender)
+          ? userData?.patientGender
+          : "",
+        address: userData?.patientAddress,
+        age: isNumber(userData?.patientAge) ? userData?.patientAge : "",
+        phone: "",
+      });
+    }
+  }, [userData]);
 
   const handleClose = () => {
     setFormData({
@@ -48,14 +63,14 @@ const AddPatientInfo = ({
       address: "",
       age: "",
       phone: "",
-    })
+    });
     setPhoneError("");
     setFnameError("");
     setAddrError("");
     onClose();
+    resetUserData();
   };
 
-  
   const handleChange = (e) => {
     if (e.target.name === "age" && e.target.value < 0) {
       setFormData({ ...formData, [e.target.name]: Math.abs(e.target.value) });
@@ -156,6 +171,7 @@ const AddPatientInfo = ({
                   onChange={handleChange}
                   margin="normal"
                   required
+                  disabled={!!userData}
                   error={!!fnameError}
                   helperText={fnameError}
                 />
@@ -170,6 +186,7 @@ const AddPatientInfo = ({
                   value={formData.gender}
                   onChange={handleChange}
                   margin="normal"
+                  disabled={!!userData}
                   required
                   //   error={!!emailError}
                   //   helperText={emailError}
@@ -194,6 +211,7 @@ const AddPatientInfo = ({
               error={!!phoneError}
               helperText={phoneError}
               required
+              disabled={!!userData}
             />
             <Grid container spacing={2}>
               <Grid item xs={8}>
@@ -207,6 +225,7 @@ const AddPatientInfo = ({
                   required
                   error={!!addrError}
                   helperText={addrError}
+                  disabled={!!userData}
                 />
               </Grid>
 
@@ -220,6 +239,7 @@ const AddPatientInfo = ({
                   onChange={handleChange}
                   margin="normal"
                   required
+                  disabled={!!userData}
                   inputProps={{
                     min: 1, // Prevents negative values
                     step: "any", // Allows decimal values
@@ -231,7 +251,12 @@ const AddPatientInfo = ({
               <Button onClick={handleClose} color="secondary" sx={{ mr: 2 }}>
                 Close
               </Button>
-              <Button type="submit" variant="contained" color="primary">
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={!!userData}
+              >
                 Add Patient Info
               </Button>
             </Box>

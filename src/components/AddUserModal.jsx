@@ -60,7 +60,7 @@ const AddUserModal = ({
   };
 
   useEffect(() => {
-    if (userData) {
+    if (userData !== undefined) {
       setFormData({
         username: userData.username,
         email: userData.email,

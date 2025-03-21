@@ -47,12 +47,6 @@ const FinancialDashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
-  // Collection table data
-  // useEffect(() => {
-
-  //   fetchColl();
-  // }, []);
-
 
   useEffect(() => {
     const fetchColl1 = async () => {

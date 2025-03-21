@@ -44,7 +44,7 @@ const AddRoleModal = ({
 
 
   useEffect(() => {
-    if (updateData) {
+    if (updateData !== undefined) {
       setFormData({
         role: updateData.name,
         description: updateData.description,

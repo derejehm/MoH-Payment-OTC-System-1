@@ -87,107 +87,110 @@ const AgreementDialog = ({
       cashier: "",
     });
     onClose();
-
-
   };
- 
+
+  useEffect(() => {
+    if (!open) {
+      handleClose();
+    }
+  }, [open]);
 
   return (
     <>
-    <Dialog
-      open={open}
-      onClose={(event, reason) => {
-        if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
-          handleClose(); // Reset and close the modal
-        }
-      }}
-      maxWidth="sm"
-      fullWidth
-      BackdropProps={{ "aria-hidden": false }}
-    >
-      <DialogTitle>Payment Confirmation & Agreement</DialogTitle>
-      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-        <DialogContent>
-          <Typography variant="h6" gutterBottom>
-            Amount to Collect: ${selectedTransaction?.collectedAmount}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-              />
-            }
-            label="I confirm this agreement paper and agree to the terms of service"
-          />
-          <TextField
-            fullWidth
-            label="Employee ID"
-            name="empId"
-            value={formData.empId.toUpperCase()}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-            error={!!empIdError}
-            helperText={empIdError}
-            InputProps={{
-              startAdornment: <CreditCardIcon sx={{ mr: 1 }} />,
-            }}
-            // disabled
-          />
-          <TextField
-            fullWidth
-            label="Employee Name"
-            name="empName"
-            value={formData.empName}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-            error={!!empNameError}
-            helperText={empNameError}
-            InputProps={{
-              startAdornment: <PersonIcon sx={{ mr: 1 }} />,
-            }}
-            // disabled
-          />
-
-          <Box mt={2}>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              Electronic Signature:
+      <Dialog
+        open={open}
+        onClose={(event, reason) => {
+          if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+            handleClose(); // Reset and close the modal
+          }
+        }}
+        maxWidth="sm"
+        fullWidth
+        BackdropProps={{ "aria-hidden": false }}
+      >
+        <DialogTitle>Payment Confirmation & Agreement</DialogTitle>
+        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+          <DialogContent>
+            <Typography variant="h6" gutterBottom>
+              Amount to Collect: ${selectedTransaction?.collectedAmount}
             </Typography>
-            <Button
-              variant="outlined"
+            <Divider sx={{ my: 2 }} />
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                />
+              }
+              label="I confirm this agreement paper and agree to the terms of service"
+            />
+            <TextField
               fullWidth
-              onClick={() => setSignature(new Date().toISOString())}
+              label="Employee ID"
+              name="empId"
+              value={formData.empId.toUpperCase()}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+              error={!!empIdError}
+              helperText={empIdError}
+              InputProps={{
+                startAdornment: <CreditCardIcon sx={{ mr: 1 }} />,
+              }}
+              // disabled
+            />
+            <TextField
+              fullWidth
+              label="Employee Name"
+              name="empName"
+              value={formData.empName}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+              error={!!empNameError}
+              helperText={empNameError}
+              InputProps={{
+                startAdornment: <PersonIcon sx={{ mr: 1 }} />,
+              }}
+              // disabled
+            />
+
+            <Box mt={2}>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                Electronic Signature:
+              </Typography>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => setSignature(new Date().toISOString())}
+              >
+                {signature || "Click to Sign"}
+              </Button>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={
+                !agreed ||
+                !signature ||
+                !formData.empId ||
+                !formData.empName ||
+                empIdError.length > 0 ||
+                empNameError.length > 0
+              }
             >
-              {signature || "Click to Sign"}
+              Confirm Agreement
             </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={
-              !agreed ||
-              !signature ||
-              !formData.empId ||
-              !formData.empName ||
-              empIdError.length >0 ||
-              empNameError.length >0
-            }
-          >
-            Confirm Agreement
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
-</>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   Checkbox,
   InputAdornment,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { DataGrid } from "@mui/x-data-grid";
@@ -67,11 +68,9 @@ const HospitalPayment = () => {
   const [reasons, setReasons] = useState([]);
   const [isAdditonalInfo, setIsAdditionalInfo] = useState(false);
   const [isAdditonalCBHIInfo, setIsAdditionalCBHIInfo] = useState(false);
-  const [currentNumber, setCurrentNumber] = useState(() => {
-    const savedNumber = localStorage.getItem("currentReceiptNumber");
-    return savedNumber ? parseInt(savedNumber, 10) : 1;
-  });
-
+  const [cardsearchLoad,setCardSearchLoad] = useState(false)
+  const [patientName ,setPatientName] = useState("")
+  const [registeredPatient ,setRegisteredPatient] = useState(null)
   //Inserting evry changet that the user makes on print into the loacl storage using the useEffect hooks
   // onchange of payments the useEffect runs
   useEffect(() => {
@@ -170,6 +169,11 @@ const HospitalPayment = () => {
 
       if (e.target.name === "trxref") {
         validateTransactionRef(e.target.value);
+      }
+      if(e.target.name === "cardNumber")
+      {
+        setPatientName("")
+        setRegisteredPatient(null)
       }
     } catch (error) {
       console.error(error.message);
@@ -555,20 +559,58 @@ const HospitalPayment = () => {
     }
   };
 
-  const handleAdditionalUser = () => {
-    setIsAdditionalInfo(true);
+  const handleAdditionalUser =async () => {
+    try{
+      if(formData.cardNumber.length <=0)
+      {
+        toast.error("please fill the card number!!")
+        return;
+      }
+  
+      const response = await api.put("/Payment/patient-info",{
+        patientCardNumber: formData?.cardNumber,
+        hospital: tokenvalue?.Hospital,
+        cashier: tokenvalue?.name
+      })
+      if(response.status === 200)
+      {
+
+        if(response.data.length <= 0 || response.data === "user not found")
+        {
+          setIsAdditionalInfo(true);
+        }else{
+          setRegisteredPatient(response?.data[0])
+          setPatientName(response?.data?.map(item=>item.patientName))
+          setIsAdditionalInfo(true);
+        }
+
+        
+      }
+
+    
+    }catch(error)
+    {
+      console.error(error)
+      toast.error(error?.response?.data)
+    }
+   
+    
   };
 
   const handleAdditionalCBHI = () => {
     setIsAdditionalCBHIInfo(true);
   };
-
+const handleResetPatientInfo  =()=>{
+  setRegisteredPatient(null)
+}
   const handleAddtionalPAtientInfo = async (Data) => {
     try {
+      setCardSearchLoad(true)
       if (formData.cardNumber.length <= 0 || cardNumberError) {
         toast.error("Please fill out The Card Number First");
         return;
       } else {
+
         const response = await api.post("/Payment/add-patient-info", {
           patientCardNumber: formData?.cardNumber,
           patientName: Data.fullName,
@@ -578,13 +620,17 @@ const HospitalPayment = () => {
           createdBy: tokenvalue?.name,
         });
         if (response.status === 201) {
+          
           toast.success(`${response?.data?.patientName} Is Registered Success Fully!`);
+          setPatientName(response?.data?.patientName)
           setIsAdditionalInfo(false);
         }
       }
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Internal Server Error!!");
+    }finally{
+      setCardSearchLoad(false)
     }
   };
 
@@ -632,8 +678,8 @@ const HospitalPayment = () => {
             value={formData.cardNumber}
             onChange={handleChange}
             fullWidth
-            error={!!cardNumberError}
-            helperText={cardNumberError}
+            // error={!!cardNumberError}
+            helperText={patientName}
             margin="normal"
             variant="outlined"
             sx={{
@@ -662,14 +708,13 @@ const HospitalPayment = () => {
                       textTransform: "none", // Removes uppercase
                       padding: "6px 16px",
                     }}
-                  >
-                    Optional
+                  >{cardsearchLoad ? <CircularProgress size={24} color="inherit" />:"Optional"}
+                    
                   </Button>
                 </InputAdornment>
               ),
             }}
           />
-
           <Typography variant="subtitle1" gutterBottom>
             {language === "AMH" ? "ምክንያት" : "Select Reason:"}
           </Typography>
@@ -988,6 +1033,8 @@ const HospitalPayment = () => {
         isOpen={isAdditonalInfo}
         onClose={() => setIsAdditionalInfo(false)}
         onSubmit={handleAddtionalPAtientInfo}
+        userData = {registeredPatient}
+        resetUserData = {handleResetPatientInfo}
       />
       <AddCBHIInfo
         isOpen={isAdditonalCBHIInfo}
