@@ -37,6 +37,7 @@ const PaymentManagementLists = () => {
     try {
       const response = await api.get(endpoint);
       if (response?.status === 200) {
+        console.log(response?.data)
         const result = {
           [key]: response?.data,
         };
@@ -79,6 +80,18 @@ const PaymentManagementLists = () => {
     );
   }, [refresh]);
 
+
+  
+  // Fetch Organization with Agreement
+  useEffect(() => {
+    fetchData(
+      `/Organiztion/Organization/${tokenvalue.name}`,
+      "Organizations with Agreements",
+      (item) => item.organization
+    );
+  }, [refresh]);
+
+
   const handleOpen = (category, item = "", id = null) => {
     setFormData({ category, name: item });
     setEditId(id);
@@ -104,6 +117,7 @@ const PaymentManagementLists = () => {
         "Payment Methods": "/Lookup/payment-type",
         "Hospital Services": "/Lookup/payment-purpose",
         "CBHI Providers": "/Providers/add-provider",
+        "Organizations with Agreements": "/Organiztion/Organization",
       };
 
       const apiEndpointsEdit = {
@@ -111,6 +125,7 @@ const PaymentManagementLists = () => {
         "Payment Methods": "/Lookup/payment-type",
         "Hospital Services": "/Lookup/payment-purpose",
         "CBHI Providers": "/Providers/update-provider",
+        "Organizations with Agreements": "/Organiztion/Organization",
       };
 
       const requestBody = {
@@ -123,6 +138,10 @@ const PaymentManagementLists = () => {
         "CBHI Providers": {
           provider: name,
           service: "CBHI",
+          createdBy: tokenvalue.name,
+        },
+        "Organizations with Agreements": {
+          organization: name,
           createdBy: tokenvalue.name,
         },
       };
@@ -150,6 +169,13 @@ const PaymentManagementLists = () => {
           id: Number(editId),
           provider: name,
           service: "CBHI",
+          updatedBy: tokenvalue.name,
+          updatedOn: new Date().toISOString(),
+        },
+ 
+        "Organizations with Agreements": {
+          id: Number(editId),
+          organization: name,
           updatedBy: tokenvalue.name,
           updatedOn: new Date().toISOString(),
         },
@@ -204,6 +230,7 @@ const PaymentManagementLists = () => {
         "Hospital Services": "/Lookup/payment-purpose",
         "Payment Methods": "/Lookup/payment-type",
         "CBHI Providers": "/Providers/delete-provider",
+        "Organizations with Agreements":"/Organiztion/Organization"
       };
 
       if (apiEndpoints[category]) {
@@ -254,6 +281,8 @@ const PaymentManagementLists = () => {
                   ? item.id
                   : category === "CBHI Providers"
                   ? item.id
+                  : category === "Organizations with Agreements"
+                  ? item.id
                   : "",
 
               name:
@@ -265,6 +294,8 @@ const PaymentManagementLists = () => {
                   ? item.purpose
                   : category === "CBHI Providers"
                   ? item.provider
+                  : category ===  "Organizations with Agreements"
+                  ? item.organization
                   : "",
             }))}
             columns={[

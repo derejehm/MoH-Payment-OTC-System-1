@@ -19,6 +19,18 @@ import { TonalitySharp } from "@mui/icons-material";
 
 const tokenvalue = getTokenValue();
 
+const formatter2 = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: true,
+});
+
+const formatAccounting2 = (num) => {
+  const formatted = formatter2.format(Math.abs(num));
+  return num < 0 ? `(${formatted})` : formatted;
+};
+
+
 const COLORS = ["#00C49F", "#FF8042"];
 
 const isNumber = (value) => !isNaN(parseFloat(value)) && isFinite(value);
@@ -165,7 +177,7 @@ const FinancialDashboard = () => {
       doc.setFont("helvetica", "bold");
       doc.text("MONEY AMOUNT:", 20, yPos);
       doc.setFont("helvetica", "normal");
-      doc.text(`${amount || "N/A"}`, 100, yPos);
+      doc.text(`${formatAccounting2(amount) || "N/A"}`, 100, yPos);
       yPos += 8;
 
       doc.setFont("helvetica", "bold");

@@ -29,13 +29,24 @@ import AddCBHIInfo from "../../components/AddCBHIInfo";
 const tokenvalue = getTokenValue();
 
 // const woredas = ["Woreda 1", "Woreda 2", "Woreda 3"]; // Add relevant woredas
-const organizations = ["Org A", "Org B", "Org C"]; // Add relevant organizations
+// const organizations = ["Org A", "Org B", "Org C"]; // Add relevant organizations
 
 const formatter = new Intl.NumberFormat("en-us", {
   style: "currency",
   currency: "ETB",
   minimumFractionDigits: 2,
 });
+
+const formatter2 = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: true,
+});
+
+const formatAccounting2 = (num) => {
+  const formatted = formatter2.format(Math.abs(num));
+  return num < 0 ? `(${formatted})` : formatted;
+};
 
 const formatAccounting = (num) => {
   const formatted = formatter.format(Math.abs(num));
@@ -59,6 +70,7 @@ const HospitalPayment = () => {
     organization: "",
   });
   const [woredas, setWoredas] = useState([]);
+  const [organizations,setOrganizations] = useState([]);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -171,6 +183,24 @@ const HospitalPayment = () => {
     fetchCBHI();
   }, []);
 
+
+    //Fetch Organization with agreement
+    useEffect(() => {
+      const fetchORG = async () => {
+        try {
+          const response = await api.get(
+            `/Organiztion/Organization/${tokenvalue.name}`
+          );
+          if (response?.status === 200) {
+            setOrganizations(response?.data?.map((item) => item.organization));
+          }
+        } catch (error) {
+          console.error(error.message);
+        }
+      };
+      fetchORG();
+    }, []);
+
   const updatePaymentSummary = (payments) => {
     const summary = payments.reduce((acc, payment) => {
       const { type, amount } = payment;
@@ -198,8 +228,14 @@ const HospitalPayment = () => {
       }
       if (e.target.name === "cardNumber") {
         setPatientName("");
-
+        setCbhiId("");
+        setRegisteredCBHI(null)
         setRegisteredPatient(null);
+      }
+
+      if (e.target.name === "woreda") {
+        setCbhiId("");
+        setRegisteredCBHI(null)
       }
     } catch (error) {
       console.error(error.message);
@@ -495,7 +531,7 @@ const HospitalPayment = () => {
       doc.setFont("helvetica", "normal");
       data?.amount?.forEach((item) => {
         doc.text(`${item.purpose}`, 20, yPos);
-        doc.text(`${parseFloat(item.Amount).toFixed(2)}`, 160, yPos);
+        doc.text(`${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`, 160, yPos);
         yPos += 8;
       });
 
@@ -507,11 +543,11 @@ const HospitalPayment = () => {
       const totalAmount = data?.amount
         ?.map((item) => item.Amount)
         .reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
-
+        
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.text(`TOTAL`, 20, yPos);
-      doc.text(`${totalAmount ? totalAmount.toFixed(2) : "0.00"}`, 160, yPos);
+      doc.text(`${formatAccounting2(totalAmount.toFixed(2))}`, 160, yPos);
       yPos += 10;
 
       // Thank You Message
@@ -641,7 +677,6 @@ const HospitalPayment = () => {
         user: tokenvalue?.name,
       });
       if (response.status === 200) {
-        console.log(response?.data)
         setCbhiId(response?.data?.map((item) => item.idNo));
         const woreda  = response?.data?.map((item) => item.provider)[0]
         if(response?.data?.length > 0)
@@ -722,6 +757,8 @@ const HospitalPayment = () => {
           });
 
           if (response.status === 201) {
+
+          setCbhiId(response?.data?.idNo)
             toast.success("Add Successfully!");
             setIsAdditionalCBHIInfo(false);
           }
