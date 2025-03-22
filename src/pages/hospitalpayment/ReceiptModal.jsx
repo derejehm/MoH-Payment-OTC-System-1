@@ -9,6 +9,7 @@ import {
   Slide,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -36,7 +37,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(5px)',
 }));
 
-const ReceiptModal = ({ open, onClose, data, onPrint }) => {
+const ReceiptModal = ({ open, onClose, data, onPrint ,onloading}) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -68,7 +69,8 @@ const ReceiptModal = ({ open, onClose, data, onPrint }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onPrint} color="primary">
-          Confirm
+          {onloading ? <CircularProgress size={24} color="inherit" />:"Confirm"}
+          
         </Button>
         <Button onClick={onClose} color="secondary">
           Close

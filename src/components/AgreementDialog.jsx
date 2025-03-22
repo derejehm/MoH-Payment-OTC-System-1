@@ -165,7 +165,12 @@ const AgreementDialog = ({
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() => setSignature(new Date().toISOString())}
+                onClick={() => {
+                  const date = new Date();
+                  date.setHours(date.getHours() + 3); // Add 3 hours to UTC time
+                  setSignature(date.toISOString());
+                }
+                }
               >
                 {signature || "Click to Sign"}
               </Button>

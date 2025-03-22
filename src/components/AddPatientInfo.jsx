@@ -43,7 +43,7 @@ const AddPatientInfo = ({
   const isNumber = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
   useEffect(() => {
-    if (userData !== undefined || Object.entries(userData).length > 0) {
+    if (userData !== undefined || Object.entries(userData).length > 0 ) {
       setFormData({
         fullName: userData?.patientName,
         gender: genders.includes(userData?.patientGender)
@@ -51,7 +51,7 @@ const AddPatientInfo = ({
           : "",
         address: userData?.patientAddress,
         age: isNumber(userData?.patientAge) ? userData?.patientAge : "",
-        phone: "",
+        phone: userData?.patientPhoneNumber === null ? "":userData?.patientPhoneNumber,
       });
     }
   }, [userData]);
@@ -204,7 +204,7 @@ const AddPatientInfo = ({
               fullWidth
               label="Phone Number"
               name="phone"
-              type="tel"
+              type="text"
               value={formData.phone}
               onChange={handleChange}
               margin="normal"

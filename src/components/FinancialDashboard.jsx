@@ -21,6 +21,8 @@ const tokenvalue = getTokenValue();
 
 const COLORS = ["#00C49F", "#FF8042"];
 
+const isNumber = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
 const PaymentStatusCard = ({ title, amount, trend, status }) => {
   return (
     <Card>
@@ -33,7 +35,7 @@ const PaymentStatusCard = ({ title, amount, trend, status }) => {
         </Typography>
         <Box display="flex" alignItems="center" mt={2}>
           <Typography variant="body2" color="textSecondary">
-            {trend}% {status}
+            {isNumber(trend)?trend:0}% {status}
           </Typography>
         </Box>
       </CardContent>
@@ -54,24 +56,24 @@ const FinancialDashboard = () => {
         const response1 = await api.get(
           `/Collection/uncollected/${tokenvalue.name}`
         );
-         console.log("unclolleted>>",response1?.data)
+         
         const updatedUncollectedData =
-          response1?.data?.map(({ uncollectedCashAmount, ...rest }) => ({
+        response1?.data.length >0 ? response1?.data?.map(({ uncollectedCashAmount, ...rest }) => ({
             collectedAmount: uncollectedCashAmount,
             ...rest,
-          })) || [];
-
+          })) || [] :[];
 
         const fetchColl = async () => {
           try {
             const response2 = await api.get(
               `/Collection/collection/${tokenvalue.name}`
             );
+             
             const updatedCollectedData =
-              response2?.data?.map(({ collectionId, ...rest }) => ({
+            response2?.data.length >0 ? response2?.data?.map(({ collectionId, ...rest }) => ({
                 id: collectionId,
                 ...rest,
-              })) || [];
+              })) || [] : [];
 
             return updatedCollectedData
               .map((prev) => ({ ...prev, status: "collected" }))
@@ -107,12 +109,13 @@ const FinancialDashboard = () => {
         const final = [...collected, ...transform2].sort((a, b) => b.id - a.id);
         setTransactions(final);
       } catch (error) {
-        console.error("Error in fetchColl1:", error.message);
+        console.error("Error in fetchColl1:", error);
       }
     };
 
     fetchColl1();
   }, [refresh]);
+
 
 
   const generatePDF = (data,amount) => {
@@ -168,7 +171,7 @@ const FinancialDashboard = () => {
       doc.setFont("helvetica", "bold");
       doc.text(`RECEIVED DATE:`, 20, yPos);
       doc.setFont("helvetica", "normal");
-      doc.text(`${data?.signature || "N/A"}`, 100, yPos);
+      doc.text(`${new Date(data?.signature).toISOString().slice(0, 19).replace("T", " , ")  || "N/A"}`, 100, yPos);
       yPos += 20;
 
       doc.setFont("helvetica", "bold");
@@ -206,6 +209,7 @@ const FinancialDashboard = () => {
     try {
       const response = await api.post("/Collection/collection", {
         collectedBy: data.empName,
+        collecterID: data.empId,
         collectedOn: data.signature,
         collectedAmount: selectedTransaction.collectedAmount,
         fromDate: selectedTransaction.fromDate,

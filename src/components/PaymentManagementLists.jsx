@@ -76,7 +76,7 @@ const PaymentManagementLists = () => {
   };
 
   const handleOpen = (category, item = "", id = null) => {
-    console.log({category, item, id})
+    console.log({ category, item, id });
     setFormData({ category, name: item });
     setEditId(id);
     setOpen(true);
@@ -113,7 +113,7 @@ const PaymentManagementLists = () => {
       } else if (category === "Payment Methods" && editId === null) {
         const response = await api.post("/Lookup/add-paymentType", {
           type: name,
-          createdBy: tokenvalue.name,
+          createdBy: tokenvalue?.name,
         });
 
         if (response.status === 201) {
@@ -127,11 +127,26 @@ const PaymentManagementLists = () => {
       } else if (category === "Hospital Services" && editId === null) {
         const response = await api.post("/Lookup/add-paymentPurpose", {
           purpose: name,
-          createdBy: tokenvalue.name,
+          createdBy: tokenvalue?.name,
         });
 
         if (response.status === 201) {
           toast.success("Hospital Services add Successfully!");
+          updatedCategory.push(response?.data);
+          saveData({ ...data, [category]: updatedCategory });
+          setRefresh((prev) => !prev);
+          handleClose();
+          return;
+        }
+      } else if (category === "CBHI Providers" && editId === null) {
+        const response = await api.post("/Providers/add-provider", {
+          provider: name,
+          service: "CBHI",
+          createdBy: tokenvalue?.name,
+        });
+
+        if (response.status === 201) {
+          toast.success("CBHI Providers add Successfully!");
           updatedCategory.push(response?.data);
           saveData({ ...data, [category]: updatedCategory });
           setRefresh((prev) => !prev);
@@ -148,14 +163,40 @@ const PaymentManagementLists = () => {
       saveData({ ...data, [category]: updatedCategory });
       handleClose();
     } catch (error) {
-      console.error(error?.message);
+      console.error(error);
       toast.error(error?.response?.data || "Internal Server Error!");
     }
   };
 
-  const handleDelete = (category, id) => {
-    const updatedCategory = data[category].filter((_, index) => index !== id);
-    saveData({ ...data, [category]: updatedCategory });
+  const handleDelete = async (category, id) => {
+    try {
+      console.log({ category, id });
+      const updatedCategory = data[category].filter((_, index) => index !== id);
+      saveData({ ...data, [category]: updatedCategory });
+
+      if (category === "Digital Payment Channels") {
+        const response = api.delete(
+          "/Lookup/payment-channel",
+          {
+            id: id,
+            deletedBy: tokenvalue.name,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.statu === 200) {
+          toast.success("Digital Payment Channel Deleted");
+          setRefresh((prev) => !prev);
+        } else {
+          toast.error("Internal Server Error!");
+        }
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
   return (
@@ -178,7 +219,15 @@ const PaymentManagementLists = () => {
           </Button>
           <DataGrid
             rows={(data[category] || []).map((item, index) => ({
-              id: item.id,
+              id:
+                category === "Digital Payment Channels"
+                  ? item.id
+                  : category === "Payment Methods"
+                  ? item.id
+                  : category === "Hospital Services"
+                  ? item.id
+                  : "",
+
               name:
                 category === "Digital Payment Channels"
                   ? item.channel

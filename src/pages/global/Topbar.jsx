@@ -38,16 +38,6 @@ const Topbar = () => {
   const handleProfile = () => navigate("/profile");
   const handleLogout = () => navigate("/logout");
 
-const handleToggleLanguage =()=>{
-  console.log('clicked')
-  // if (localStorage.getItem('lang') === "EN")
-  // {
-  //   localStorage.setItem("lang",'AMH')
-  // }else{
-  //   localStorage.setItem("lang",'EN')
-  // }
-
-}
 
   return session ? (
     <Box display="flex" justifyContent="space-between" p={2} >
