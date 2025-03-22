@@ -9,6 +9,7 @@ import {
   IconButton,
   Backdrop,
   Grid,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ToastContainer, toast } from "react-toastify";
@@ -20,6 +21,7 @@ const AddPatientInfo = ({
   onSubmit,
   userData,
   resetUserData,
+  adding,
 }) => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -43,7 +45,7 @@ const AddPatientInfo = ({
   const isNumber = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
   useEffect(() => {
-    if (userData !== undefined || Object.entries(userData).length > 0 ) {
+    if (userData !== undefined) {
       setFormData({
         fullName: userData?.patientName,
         gender: genders.includes(userData?.patientGender)
@@ -51,7 +53,10 @@ const AddPatientInfo = ({
           : "",
         address: userData?.patientAddress,
         age: isNumber(userData?.patientAge) ? userData?.patientAge : "",
-        phone: userData?.patientPhoneNumber === null ? "":userData?.patientPhoneNumber,
+        phone:
+          userData?.patientPhoneNumber === null
+            ? ""
+            : userData?.patientPhoneNumber,
       });
     }
   }, [userData]);
@@ -257,7 +262,12 @@ const AddPatientInfo = ({
                 color="primary"
                 disabled={!!userData}
               >
-                Add Patient Info
+                {adding ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Add Patient Info"
+                )}
+                
               </Button>
             </Box>
           </form>

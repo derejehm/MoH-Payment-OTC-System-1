@@ -5,16 +5,23 @@ import {
   Typography,
   TextField,
   Button,
-  MenuItem,
   IconButton,
   Backdrop,
   Grid,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
+const AddCBHIInfo = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  userData,
+  resetUserData,
+  adding,
+}) => {
   const [formData, setFormData] = useState({
     kebele: "",
     idNumber: "",
@@ -29,6 +36,19 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
     onSubmit(formData);
   };
 
+  useEffect(() => {
+    if (userData !== undefined) {
+      setFormData({
+        kebele: userData?.kebele || "",
+        idNumber: userData?.idNo || "",
+        referalNum: userData?.referalNo || "",
+        letterNum: userData?.letterNo || "",
+        examination: userData?.examination || "",
+        goth: userData?.goth || "",
+      });
+    }
+  }, [userData]);
+
   const handleClose = () => {
     setFormData({
       kebele: "",
@@ -39,6 +59,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
       goth: "",
     });
     onClose();
+    resetUserData();
   };
 
   const handleChange = (e) => {
@@ -83,7 +104,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.kebele}
                   onChange={handleChange}
                   margin="normal"
-                  required
+                  disabled={!!userData}
                   //   error={!!fnameError}
                   //   helperText={fnameError}
                 />
@@ -97,7 +118,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.goth}
                   onChange={handleChange}
                   margin="normal"
-                  required
+                  disabled={!!userData}
                   //   error={!!fnameError}
                   //   helperText={fnameError}
                 />
@@ -111,7 +132,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.idNumber}
                   onChange={handleChange}
                   margin="normal"
-                  required
+                  disabled={!!userData}
                   //   error={!!emailError}
                   //   helperText={emailError}
                 />
@@ -126,6 +147,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
               value={formData.referalNum}
               onChange={handleChange}
               margin="normal"
+              disabled={!!userData}
               //   error={!!phoneError}
               //   helperText={phoneError}
             />
@@ -139,7 +161,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.letterNum}
                   onChange={handleChange}
                   margin="normal"
-                  required
+                  disabled={!!userData}
                   //   error={!!addrError}
                   //   helperText={addrError}
                 />
@@ -154,7 +176,7 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.examination}
                   onChange={handleChange}
                   margin="normal"
-                  required
+                  disabled={!!userData}
                 />
               </Grid>
             </Grid>
@@ -162,8 +184,18 @@ const AddCBHIInfo = ({ isOpen, onClose, onSubmit }) => {
               <Button onClick={handleClose} color="secondary" sx={{ mr: 2 }}>
                 Close
               </Button>
-              <Button type="submit" variant="contained" color="primary">
-                Add CBHI Info
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={!!userData}
+              >
+                {adding ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Add CBHI Info"
+                )}
+                
               </Button>
             </Box>
           </form>

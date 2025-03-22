@@ -60,17 +60,17 @@ const AddUserModal = ({
   };
 
   useEffect(() => {
-    if (userData !== undefined) {
+    if (userData !== undefined || userData !== null) {
       setFormData({
-        username: userData.username,
-        email: userData.email,
+        username: userData?.username,
+        email: userData?.email,
         password: "", // Don't pre-fill the password
         confirmpassword: "",
-        phone: userData.phoneNumber,
-        role: userData.role,
-        department: userData.departement,
-        usertype: userData.userType,
-        hospital: userData.hospital,
+        phone: userData?.phoneNumber,
+        role: userData?.role,
+        department: userData?.departement,
+        usertype: userData?.userType,
+        hospital: userData?.hospital,
       });
     }
   }, [userData]);

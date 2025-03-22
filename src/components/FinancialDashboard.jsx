@@ -56,7 +56,7 @@ const FinancialDashboard = () => {
         const response1 = await api.get(
           `/Collection/uncollected/${tokenvalue.name}`
         );
-         
+
         const updatedUncollectedData =
         response1?.data.length >0 ? response1?.data?.map(({ uncollectedCashAmount, ...rest }) => ({
             collectedAmount: uncollectedCashAmount,

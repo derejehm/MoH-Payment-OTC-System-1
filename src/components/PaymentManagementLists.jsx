@@ -70,13 +70,16 @@ const PaymentManagementLists = () => {
     );
   }, [refresh]);
 
-  const saveData = (newData) => {
-    // setData(newData);
-    localStorage.setItem("paymentData", JSON.stringify(newData));
-  };
+  // Fetch CBHI Provider
+  useEffect(() => {
+    fetchData(
+      `/Providers/list-providers/${tokenvalue.name}`,
+      "CBHI Providers",
+      (item) => item.provider
+    );
+  }, [refresh]);
 
   const handleOpen = (category, item = "", id = null) => {
-    console.log({ category, item, id });
     setFormData({ category, name: item });
     setEditId(id);
     setOpen(true);
@@ -91,111 +94,134 @@ const PaymentManagementLists = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, name: e.target.value });
   };
-
   const handleSubmit = async () => {
     try {
       const { category, name } = formData;
       if (!name.trim()) return;
-      const updatedCategory = data[category] ? [...data[category]] : [];
-      if (category === "Digital Payment Channels" && editId === null) {
-        const response = await api.post("/Lookup/add-paymentChannel", {
+
+      const apiEndpoints = {
+        "Digital Payment Channels": "/Lookup/payment-channel",
+        "Payment Methods": "/Lookup/payment-type",
+        "Hospital Services": "/Lookup/payment-purpose",
+        "CBHI Providers": "/Providers/add-provider",
+      };
+
+      const apiEndpointsEdit = {
+        "Digital Payment Channels": "/Lookup/payment-channel",
+        "Payment Methods": "/Lookup/payment-type",
+        "Hospital Services": "/Lookup/payment-purpose",
+        "CBHI Providers": "/Providers/update-provider",
+      };
+
+      const requestBody = {
+        "Digital Payment Channels": {
           channel: name,
           createdBy: tokenvalue.name,
-        });
-        if (response.status === 201) {
-          toast.success("Digital Payment Channels add Successfully!");
-          updatedCategory.push(response?.data);
-          saveData({ ...data, [category]: updatedCategory });
-          setRefresh((prev) => !prev);
-          handleClose();
-          return;
-        }
-      } else if (category === "Payment Methods" && editId === null) {
-        const response = await api.post("/Lookup/add-paymentType", {
-          type: name,
-          createdBy: tokenvalue?.name,
-        });
-
-        if (response.status === 201) {
-          toast.success("Payment Methods add Successfully!");
-          updatedCategory.push(response?.data);
-          saveData({ ...data, [category]: updatedCategory });
-          setRefresh((prev) => !prev);
-          handleClose();
-          return;
-        }
-      } else if (category === "Hospital Services" && editId === null) {
-        const response = await api.post("/Lookup/add-paymentPurpose", {
-          purpose: name,
-          createdBy: tokenvalue?.name,
-        });
-
-        if (response.status === 201) {
-          toast.success("Hospital Services add Successfully!");
-          updatedCategory.push(response?.data);
-          saveData({ ...data, [category]: updatedCategory });
-          setRefresh((prev) => !prev);
-          handleClose();
-          return;
-        }
-      } else if (category === "CBHI Providers" && editId === null) {
-        const response = await api.post("/Providers/add-provider", {
+        },
+        "Payment Methods": { type: name, createdBy: tokenvalue.name },
+        "Hospital Services": { purpose: name, createdBy: tokenvalue.name },
+        "CBHI Providers": {
           provider: name,
           service: "CBHI",
-          createdBy: tokenvalue?.name,
-        });
+          createdBy: tokenvalue.name,
+        },
+      };
+
+      const requestBodyEdit = {
+        "Digital Payment Channels": {
+          id: Number(editId),
+          channel: name,
+          updatedBy: tokenvalue.name,
+          updatedOn: new Date().toISOString(),
+        },
+        "Payment Methods": {
+          id: Number(editId),
+          type: name,
+          updatedBy: tokenvalue.name,
+          updatedOn: new Date().toISOString(),
+        },
+        "Hospital Services": {
+          id: Number(editId),
+          purpose: name,
+          updatedBy: tokenvalue.name,
+          updatedOn: new Date().toISOString(),
+        },
+        "CBHI Providers": {
+          id: Number(editId),
+          provider: name,
+          service: "CBHI",
+          updatedBy: tokenvalue.name,
+          updatedOn: new Date().toISOString(),
+        },
+      };
+
+      if (editId !== null && apiEndpointsEdit[category]) {
+        console.log("Editing", editId, apiEndpointsEdit[category], category);
+        try {
+          const response = await api.put(
+            apiEndpointsEdit[category],
+            requestBodyEdit[category]
+          );
+          console.log(response);
+
+          toast.success(`${category} updated successfully!`);
+          setRefresh((prev) => !prev);
+          handleClose();
+        } catch (error) {
+          console.error("Update error:", error);
+          toast.error(error?.response?.data || "Error updating data!");
+        }
+      }
+
+      if (apiEndpoints[category] && editId === null) {
+        const response = await api.post(
+          apiEndpoints[category],
+          requestBody[category],
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         if (response.status === 201) {
-          toast.success("CBHI Providers add Successfully!");
-          updatedCategory.push(response?.data);
-          saveData({ ...data, [category]: updatedCategory });
+          toast.success(`${category} added successfully!`);
           setRefresh((prev) => !prev);
           handleClose();
           return;
         }
       }
 
-      if (editId !== null) {
-        updatedCategory[editId] = name;
-      } else {
-        updatedCategory.push(name);
-      }
-      saveData({ ...data, [category]: updatedCategory });
       handleClose();
     } catch (error) {
-      console.error(error);
+      console.error("Error:", error);
       toast.error(error?.response?.data || "Internal Server Error!");
     }
   };
 
   const handleDelete = async (category, id) => {
     try {
-      console.log({ category, id });
-      const updatedCategory = data[category].filter((_, index) => index !== id);
-      saveData({ ...data, [category]: updatedCategory });
+      const apiEndpoints = {
+        "Digital Payment Channels": "/Lookup/payment-channel",
+        "Hospital Services": "/Lookup/payment-purpose",
+        "Payment Methods": "/Lookup/payment-type",
+        "CBHI Providers": "/Providers/delete-provider",
+      };
 
-      if (category === "Digital Payment Channels") {
-        const response = api.delete(
-          "/Lookup/payment-channel",
-          {
-            id: id,
-            deletedBy: tokenvalue.name,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (response.statu === 200) {
-          toast.success("Digital Payment Channel Deleted");
+      if (apiEndpoints[category]) {
+        const response = await api.delete(apiEndpoints[category], {
+          headers: { "Content-Type": "application/json" },
+          data: { id: id, deletedBy: tokenvalue.name },
+        });
+
+        if (response.status === 200) {
+          toast.success(`${category} deleted successfully!`);
           setRefresh((prev) => !prev);
-        } else {
-          toast.error("Internal Server Error!");
         }
+      } else {
+        console.warn(`No API endpoint found for category: ${category}`);
       }
     } catch (error) {
-      console.error(error.message);
+      console.error("Error deleting category:", error);
+      toast.error("Failed to delete item. Please try again.");
     }
   };
 
@@ -226,6 +252,8 @@ const PaymentManagementLists = () => {
                   ? item.id
                   : category === "Hospital Services"
                   ? item.id
+                  : category === "CBHI Providers"
+                  ? item.id
                   : "",
 
               name:
@@ -235,6 +263,8 @@ const PaymentManagementLists = () => {
                   ? item.type
                   : category === "Hospital Services"
                   ? item.purpose
+                  : category === "CBHI Providers"
+                  ? item.provider
                   : "",
             }))}
             columns={[

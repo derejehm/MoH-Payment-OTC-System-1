@@ -25,10 +25,10 @@ import api from "../../utils/api";
 import AddPatientInfo from "../../components/AddPatientInfo";
 import { useLang } from "../../contexts/LangContext";
 import AddCBHIInfo from "../../components/AddCBHIInfo";
-import { use } from "react";
+
 const tokenvalue = getTokenValue();
 
-const woredas = ["Woreda 1", "Woreda 2", "Woreda 3"]; // Add relevant woredas
+// const woredas = ["Woreda 1", "Woreda 2", "Woreda 3"]; // Add relevant woredas
 const organizations = ["Org A", "Org B", "Org C"]; // Add relevant organizations
 
 const formatter = new Intl.NumberFormat("en-us", {
@@ -58,7 +58,7 @@ const HospitalPayment = () => {
     trxref: "",
     organization: "",
   });
-
+  const [woredas, setWoredas] = useState([]);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -71,9 +71,15 @@ const HospitalPayment = () => {
   const [isAdditonalInfo, setIsAdditionalInfo] = useState(false);
   const [isAdditonalCBHIInfo, setIsAdditionalCBHIInfo] = useState(false);
   const [cardsearchLoad, setCardSearchLoad] = useState(false);
+  const [cbhisearchLoad, setCbhiSearchLoad] = useState(false);
+  const [addPatientLoad, setAddPatienthLoad] = useState(false);
   const [patientName, setPatientName] = useState("");
+  const [cbhiId, setCbhiId] = useState("");
   const [registeredPatient, setRegisteredPatient] = useState(null);
+  const [registeredCBHI, setRegisteredCBHI] = useState(null);
   const [isPrintLoading, setIsPrintLoading] = useState(false);
+  const [isAdditionalCBHILoading, setIsAdditionalCBHILoading] = useState(false);
+
   //Inserting evry changet that the user makes on print into the loacl storage using the useEffect hooks
   // onchange of payments the useEffect runs
   useEffect(() => {
@@ -148,6 +154,23 @@ const HospitalPayment = () => {
     fetchChane();
   }, []);
 
+  //Fetch (CBHI) providers
+  useEffect(() => {
+    const fetchCBHI = async () => {
+      try {
+        const response = await api.get(
+          `/Providers/list-providers/${tokenvalue.name}`
+        );
+        if (response?.status === 200) {
+          setWoredas(response?.data?.map((item) => item.provider));
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchCBHI();
+  }, []);
+
   const updatePaymentSummary = (payments) => {
     const summary = payments.reduce((acc, payment) => {
       const { type, amount } = payment;
@@ -175,6 +198,7 @@ const HospitalPayment = () => {
       }
       if (e.target.name === "cardNumber") {
         setPatientName("");
+
         setRegisteredPatient(null);
       }
     } catch (error) {
@@ -343,7 +367,11 @@ const HospitalPayment = () => {
           trxref: "",
           organization: "",
         });
-        toast.success(response?.data?.message);
+        setRegisteredPatient(null);
+        setPatientName("");
+        setCbhiId("");
+        setRegisteredCBHI(null);
+        toast.success(`Payment Regitstered Under ${response?.data?.refNo}`);
         setRefresh((prev) => !prev);
         generatePDF(newPayment, response?.data?.refNo);
         setIsPrintLoading(false);
@@ -565,6 +593,7 @@ const HospitalPayment = () => {
 
   const handleAdditionalUser = async () => {
     try {
+      setAddPatienthLoad(true)
       if (formData.cardNumber.length <= 0) {
         toast.error("please fill the card number!!");
         return;
@@ -587,43 +616,49 @@ const HospitalPayment = () => {
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data);
+    }finally{
+      setAddPatienthLoad(false)
     }
   };
 
   const handleResetPatientInfo = () => {
     setRegisteredPatient(null);
   };
+  const handleResetCBHIInfo = () => {
+    setRegisteredCBHI(null);
+  };
 
-  const handleAdditionalCBHI = async (Data) => {
+  const handleAdditionalCBHI = async () => {
     try {
+      setCbhiSearchLoad(true);
       if (formData.cardNumber.length <= 0) {
         toast.error("Please fill out The Card Number First");
         return;
       }
 
-      if (formData.woreda.length <= 0) {
-        toast.error("Please fill out The Woreda First");
-        return;
+      const response = await api.put("/Payment/get-service-provider", {
+        cardnumber: formData?.cardNumber,
+        user: tokenvalue?.name,
+      });
+      if (response.status === 200) {
+        console.log(response?.data)
+        setCbhiId(response?.data?.map((item) => item.idNo));
+        const woreda  = response?.data?.map((item) => item.provider)[0]
+        if(response?.data?.length > 0)
+        {
+          setFormData((prev) => ({
+            ...prev,
+            woreda: woredas.includes(woreda) ? woreda :"",
+          }));  
+        }
+      
+        setRegisteredCBHI(response?.data[0]);
+        setIsAdditionalCBHIInfo(true);
       }
-      // const response = await api.post("/Payment/add-patient-info", {
-      //   patientCardNumber: formData?.cardNumber,
-      //   patientName: Data.fullName,
-      //   patientGender: Data.gender,
-      //   patientAddress: Data.address,
-      //   patientAge: Number(Data.age),
-      //   createdBy: tokenvalue?.name,
-      // });
-      // if (response.status === 201) {
-      //   toast.success(
-      //     `${response?.data?.patientName} Is Registered Success Fully!`
-      //   );
-      //   setPatientName(response?.data?.patientName);
-      //   setIsAdditionalInfo(false);
-      // }
-
-      setIsAdditionalCBHIInfo(true);
     } catch (error) {
       console.error(error);
+    } finally {
+      setCbhiSearchLoad(false);
     }
   };
 
@@ -641,7 +676,7 @@ const HospitalPayment = () => {
           patientAddress: Data.address,
           patientAge: Number(Data.age),
           createdBy: tokenvalue?.name,
-          patientPhoneNumber:Data.phone,
+          patientPhoneNumber: Data.phone,
         });
         if (response.status === 201) {
           toast.success(
@@ -668,21 +703,33 @@ const HospitalPayment = () => {
         toast.error("Please fill out Woreda First");
         return;
       } else {
-        console.log(Data, formData.cardNumber, formData.woreda);
-        setIsAdditionalCBHIInfo(true);
-        // const response = await api.post("/Payment/add-patient-info", {
-        //   patientCardNumber: formData?.cardNumber,
-        //   patientName: Data.fullName,
-        //   patientGender: Data.gender,
-        //   patientAddress: Data.address,
-        //   patientAge: Number(Data.age),
-        //   createdBy: tokenvalue?.name,
-        // });
 
-        // if (response.status === 201) {
-        //   toast.success("");
-        //   setIsAdditionalInfo(false);
-        // }
+
+        setIsAdditionalCBHIInfo(true);
+        try {
+          setIsAdditionalCBHILoading(true);
+          const response = await api.post("/Payment/add-service-provider", {
+            provider: formData?.woreda,
+            service: "CBHI",
+            kebele: Data?.kebele,
+            goth: Data?.goth,
+            idNo: Data?.idNumber,
+            referalNo:Data?.referalNum,
+            letterNo: Data?.letterNum,
+            examination: Data?.examination,
+            cashier: tokenvalue?.name,
+            cardNumber: formData?.cardNumber,
+          });
+
+          if (response.status === 201) {
+            toast.success("Add Successfully!");
+            setIsAdditionalCBHIInfo(false);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsAdditionalCBHILoading(false);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -900,7 +947,11 @@ const HospitalPayment = () => {
               onChange={handleChange}
               fullWidth
               required
+              helperText={cbhiId}
               margin="normal"
+              FormHelperTextProps={{
+                style: { color: "green", fontSize: "14px" },
+              }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px", // Rounded edges for a modern look
@@ -928,7 +979,11 @@ const HospitalPayment = () => {
                         padding: "6px 16px",
                       }}
                     >
-                      Optional
+                      {cbhisearchLoad ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        "Optional"
+                      )}
                     </Button>
                   </InputAdornment>
                 ),
@@ -1068,11 +1123,15 @@ const HospitalPayment = () => {
         onSubmit={handleAddtionalPAtientInfo}
         userData={registeredPatient}
         resetUserData={handleResetPatientInfo}
+        adding ={addPatientLoad}
       />
       <AddCBHIInfo
         isOpen={isAdditonalCBHIInfo}
         onClose={() => setIsAdditionalCBHIInfo(false)}
         onSubmit={handleAddtionalCBHIInfo}
+        userData={registeredCBHI}
+        resetUserData={handleResetCBHIInfo}
+        adding ={isAdditionalCBHILoading}
       />
       <ToastContainer />
     </Container>
