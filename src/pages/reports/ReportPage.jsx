@@ -16,7 +16,7 @@ const paymentMethods = [
   "Cash",
   "Digital",
   "CBHI",
-  "Free Service",
+  "Free of Charge",
   "Credit",
 ];
 const mockData = [

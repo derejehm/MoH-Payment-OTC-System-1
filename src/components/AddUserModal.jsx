@@ -86,6 +86,10 @@ const AddUserModal = ({
     if (e.target.name === "username") {
       validateUsername(e.target.value);
     }
+    if(e.target.name === "confirmpassword")
+    {
+      setConfPassError("")
+    }
   };
 
   const validateUsername = (username) => {

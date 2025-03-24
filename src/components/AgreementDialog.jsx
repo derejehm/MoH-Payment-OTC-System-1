@@ -112,7 +112,7 @@ const AgreementDialog = ({
         <form onSubmit={handleSubmit} style={{ width: "100%" }}>
           <DialogContent>
             <Typography variant="h6" gutterBottom>
-              Amount to Collect: ${selectedTransaction?.collectedAmount}
+              Amount to Collect: ETB &nbsp;{selectedTransaction?.collectedAmount}
             </Typography>
             <Divider sx={{ my: 2 }} />
 

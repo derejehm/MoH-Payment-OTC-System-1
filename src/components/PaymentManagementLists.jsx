@@ -307,6 +307,7 @@ const PaymentManagementLists = () => {
                 renderCell: (params) => (
                  ![
                   "CASH",
+                  "ALL",
                   "CBHI",
                   "Credit",
                   "Free of Charge",

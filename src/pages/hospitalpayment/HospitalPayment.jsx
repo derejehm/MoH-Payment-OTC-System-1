@@ -70,7 +70,7 @@ const HospitalPayment = () => {
     organization: "",
   });
   const [woredas, setWoredas] = useState([]);
-  const [organizations,setOrganizations] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -142,7 +142,11 @@ const HospitalPayment = () => {
       try {
         const response = await api.get("/Lookup/payment-type");
         if (response?.status === 200) {
-          setPaymentMehods(response?.data?.map((item) => item.type));
+          setPaymentMehods(
+            response?.data
+              ?.filter((item) => item.type !== "ALL")
+              .map((item) => item.type)
+          );
         }
       } catch (error) {
         console.error(error.message);
@@ -183,23 +187,22 @@ const HospitalPayment = () => {
     fetchCBHI();
   }, []);
 
-
-    //Fetch Organization with agreement
-    useEffect(() => {
-      const fetchORG = async () => {
-        try {
-          const response = await api.get(
-            `/Organiztion/Organization/${tokenvalue.name}`
-          );
-          if (response?.status === 200 || response?.status === 201) {
-            setOrganizations(response?.data?.map((item) => item.organization));
-          }
-        } catch (error) {
-          console.error(error.message);
+  //Fetch Organization with agreement
+  useEffect(() => {
+    const fetchORG = async () => {
+      try {
+        const response = await api.get(
+          `/Organiztion/Organization/${tokenvalue.name}`
+        );
+        if (response?.status === 200 || response?.status === 201) {
+          setOrganizations(response?.data?.map((item) => item.organization));
         }
-      };
-      fetchORG();
-    }, []);
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchORG();
+  }, []);
 
   const updatePaymentSummary = (payments) => {
     const summary = payments.reduce((acc, payment) => {
@@ -229,13 +232,17 @@ const HospitalPayment = () => {
       if (e.target.name === "cardNumber") {
         setPatientName("");
         setCbhiId("");
-        setRegisteredCBHI(null)
+        setRegisteredCBHI(null);
         setRegisteredPatient(null);
+      }
+      if(e.target.name === "method")
+      {
+        setFormData((prev)=>({...prev,woreda : "",trxref:"",organization:"",digitalChannel:""}))
       }
 
       if (e.target.name === "woreda") {
         setCbhiId("");
-        setRegisteredCBHI(null)
+        setRegisteredCBHI(null);
       }
     } catch (error) {
       console.error(error.message);
@@ -243,13 +250,13 @@ const HospitalPayment = () => {
   };
 
   const validateTransactionRef = (trxRef) => {
-    const trxPattern = /^[A-Za-z0-9-_]{12,25}$/;
+    const trxPattern = /^[A-Za-z0-9-_]{10,25}$/;
 
     if (!trxRef) {
       settrxRefError("Transaction reference is required");
     } else if (!trxPattern.test(trxRef)) {
       settrxRefError(
-        "Invalid format. Use 12-25 characters with letters, numbers, -, _"
+        "Invalid format. Use 10-25 characters with letters, numbers, -, _"
       );
     } else {
       settrxRefError("");
@@ -329,10 +336,10 @@ const HospitalPayment = () => {
         formData.amount.length <= 0 ||
         !formData.method ||
         (formData.method.toUpperCase().includes("DIGITAL") &&
-          !formData.digitalChannel &&
-          !formData.trxref) ||
+          (!formData.digitalChannel || !formData.trxref || trxRefError.length > 0)) ||
         (formData.method.toUpperCase().includes("CBHI") && !formData.woreda) ||
-        (formData.method.toUpperCase().includes("CREDIT") && !formData.organization)
+        (formData.method.toUpperCase().includes("CREDIT") &&
+          !formData.organization)
       ) {
         return window.alert("Please fill all the necessary fields!!");
       }
@@ -531,7 +538,11 @@ const HospitalPayment = () => {
       doc.setFont("helvetica", "normal");
       data?.amount?.forEach((item) => {
         doc.text(`${item.purpose}`, 20, yPos);
-        doc.text(`${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`, 160, yPos);
+        doc.text(
+          `${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`,
+          160,
+          yPos
+        );
         yPos += 8;
       });
 
@@ -543,7 +554,7 @@ const HospitalPayment = () => {
       const totalAmount = data?.amount
         ?.map((item) => item.Amount)
         .reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
-        
+
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.text(`TOTAL`, 20, yPos);
@@ -629,7 +640,7 @@ const HospitalPayment = () => {
 
   const handleAdditionalUser = async () => {
     try {
-      setAddPatienthLoad(true)
+      setAddPatienthLoad(true);
       if (formData.cardNumber.length <= 0) {
         toast.error("please fill the card number!!");
         return;
@@ -652,8 +663,8 @@ const HospitalPayment = () => {
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data);
-    }finally{
-      setAddPatienthLoad(false)
+    } finally {
+      setAddPatienthLoad(false);
     }
   };
 
@@ -678,15 +689,14 @@ const HospitalPayment = () => {
       });
       if (response.status === 200) {
         setCbhiId(response?.data?.map((item) => item.idNo));
-        const woreda  = response?.data?.map((item) => item.provider)[0]
-        if(response?.data?.length > 0)
-        {
+        const woreda = response?.data?.map((item) => item.provider)[0];
+        if (response?.data?.length > 0) {
           setFormData((prev) => ({
             ...prev,
-            woreda: woredas.includes(woreda) ? woreda :"",
-          }));  
+            woreda: woredas.includes(woreda) ? woreda : "",
+          }));
         }
-      
+
         setRegisteredCBHI(response?.data[0]);
         setIsAdditionalCBHIInfo(true);
       }
@@ -738,8 +748,6 @@ const HospitalPayment = () => {
         toast.error("Please fill out Woreda First");
         return;
       } else {
-
-
         setIsAdditionalCBHIInfo(true);
         try {
           setIsAdditionalCBHILoading(true);
@@ -749,7 +757,7 @@ const HospitalPayment = () => {
             kebele: Data?.kebele,
             goth: Data?.goth,
             idNo: Data?.idNumber,
-            referalNo:Data?.referalNum,
+            referalNo: Data?.referalNum,
             letterNo: Data?.letterNum,
             examination: Data?.examination,
             cashier: tokenvalue?.name,
@@ -757,8 +765,7 @@ const HospitalPayment = () => {
           });
 
           if (response.status === 201) {
-
-          setCbhiId(response?.data?.idNo)
+            setCbhiId(response?.data?.idNo);
             toast.success("Add Successfully!");
             setIsAdditionalCBHIInfo(false);
           }
@@ -1160,7 +1167,7 @@ const HospitalPayment = () => {
         onSubmit={handleAddtionalPAtientInfo}
         userData={registeredPatient}
         resetUserData={handleResetPatientInfo}
-        adding ={addPatientLoad}
+        adding={addPatientLoad}
       />
       <AddCBHIInfo
         isOpen={isAdditonalCBHIInfo}
@@ -1168,7 +1175,7 @@ const HospitalPayment = () => {
         onSubmit={handleAddtionalCBHIInfo}
         userData={registeredCBHI}
         resetUserData={handleResetCBHIInfo}
-        adding ={isAdditionalCBHILoading}
+        adding={isAdditionalCBHILoading}
       />
       <ToastContainer />
     </Container>
