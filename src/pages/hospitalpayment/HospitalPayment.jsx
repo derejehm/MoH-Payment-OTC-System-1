@@ -238,6 +238,8 @@ const HospitalPayment = () => {
       if(e.target.name === "method")
       {
         setFormData((prev)=>({...prev,woreda : "",trxref:"",organization:"",digitalChannel:""}))
+        setCbhiId("");
+        setRegisteredCBHI(null);
       }
 
       if (e.target.name === "woreda") {
