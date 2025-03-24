@@ -191,7 +191,7 @@ const HospitalPayment = () => {
           const response = await api.get(
             `/Organiztion/Organization/${tokenvalue.name}`
           );
-          if (response?.status === 200) {
+          if (response?.status === 200 || response?.status === 201) {
             setOrganizations(response?.data?.map((item) => item.organization));
           }
         } catch (error) {
@@ -328,11 +328,11 @@ const HospitalPayment = () => {
         formData.reason.length <= 0 ||
         formData.amount.length <= 0 ||
         !formData.method ||
-        (formData.method === "Digital" &&
+        (formData.method.toUpperCase().includes("DIGITAL") &&
           !formData.digitalChannel &&
           !formData.trxref) ||
-        (formData.method === "(CBHI)" && !formData.woreda) ||
-        (formData.method === "Credit" && !formData.organization)
+        (formData.method.toUpperCase().includes("CBHI") && !formData.woreda) ||
+        (formData.method.toUpperCase().includes("CREDIT") && !formData.organization)
       ) {
         return window.alert("Please fill all the necessary fields!!");
       }
@@ -476,7 +476,7 @@ const HospitalPayment = () => {
       yPos += 8;
 
       // Additional Details
-      if (data.method === "Digital") {
+      if (data.method.toUpperCase().includes("DIGITAL")) {
         doc.setFont("helvetica", "bold");
         doc.text("Channel:", 20, yPos);
         doc.setFont("helvetica", "normal");
@@ -488,13 +488,13 @@ const HospitalPayment = () => {
         doc.setFont("helvetica", "normal");
         doc.text(`${data.trxref || "N/A"}`, 70, yPos);
         yPos += 8;
-      } else if (data.method === "(CBHI)") {
+      } else if (data.method.toUpperCase().includes("CBHI")) {
         doc.setFont("helvetica", "bold");
         doc.text(`Woreda:`, 20, yPos);
         doc.setFont("helvetica", "normal");
         doc.text(`${data.woreda || "N/A"}`, 70, yPos);
         yPos += 8;
-      } else if (data.method === "Credit") {
+      } else if (data.method.toUpperCase().includes("CREDIT")) {
         doc.setFont("helvetica", "bold");
         doc.text(`Organization:`, 20, yPos);
         doc.setFont("helvetica", "normal");
@@ -588,7 +588,7 @@ const HospitalPayment = () => {
           color={
             params.row.type === "CASH"
               ? "green"
-              : params.row.type === "Credit"
+              : params.row.type.toUpperCase().includes("CREDIT")
               ? "red"
               : "black"
           }
@@ -609,13 +609,13 @@ const HospitalPayment = () => {
         },
       });
       let url;
-      if (formData.digitalChannel === "TeleBirr") {
+      if (formData.digitalChannel.toUpperCase().includes("TELEBIRR")) {
         url = response.data.find(
-          (item) => item.institution === "telebirr"
+          (item) => item.institution.toLowerCase() === "telebirr"
         )?.qrLink;
-      } else if (formData.digitalChannel === "CBE") {
+      } else if (formData.digitalChannel.toUpperCase().includes("CBE")) {
         url = response.data.find(
-          (item) => item.institution === "telebirr"
+          (item) => item.institution.toLowerCase() === "cbe"
         )?.qrLink;
       }
 
@@ -909,7 +909,7 @@ const HospitalPayment = () => {
               </MenuItem>
             ))}
           </TextField>
-          {formData?.method === "Digital" && (
+          {formData?.method.toUpperCase().includes("DIGITAL") && (
             <>
               <TextField
                 select
@@ -975,7 +975,7 @@ const HospitalPayment = () => {
               ></TextField>
             </>
           )}
-          {formData?.method.trim() === "(CBHI)" && (
+          {formData?.method.trim().toUpperCase().includes("CBHI") && (
             <TextField
               select
               label="Woreda"
@@ -1033,7 +1033,7 @@ const HospitalPayment = () => {
               ))}
             </TextField>
           )}
-          {formData?.method === "Credit" && (
+          {formData?.method.toUpperCase().includes("CREDIT") && (
             <TextField
               select
               label="Organization"

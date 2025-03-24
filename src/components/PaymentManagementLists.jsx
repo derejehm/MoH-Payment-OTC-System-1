@@ -36,8 +36,7 @@ const PaymentManagementLists = () => {
   const fetchData = async (endpoint, key, mapFunction) => {
     try {
       const response = await api.get(endpoint);
-      if (response?.status === 200) {
-        console.log(response?.data)
+      if (response?.status === 200 || response?.status === 201) {
         const result = {
           [key]: response?.data,
         };
@@ -47,6 +46,7 @@ const PaymentManagementLists = () => {
       console.error(error.message);
     }
   };
+  
 
   // Fetch Payment Methods
   useEffect(() => {
@@ -182,13 +182,11 @@ const PaymentManagementLists = () => {
       };
 
       if (editId !== null && apiEndpointsEdit[category]) {
-        console.log("Editing", editId, apiEndpointsEdit[category], category);
         try {
           const response = await api.put(
             apiEndpointsEdit[category],
             requestBodyEdit[category]
           );
-          console.log(response);
 
           toast.success(`${category} updated successfully!`);
           setRefresh((prev) => !prev);
@@ -207,8 +205,7 @@ const PaymentManagementLists = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-
-        if (response.status === 201) {
+        if (response.status === 201  ||  response.status === 200) {
           toast.success(`${category} added successfully!`);
           setRefresh((prev) => !prev);
           handleClose();
@@ -308,7 +305,17 @@ const PaymentManagementLists = () => {
                 field: "actions",
                 headerName: "Actions",
                 renderCell: (params) => (
+                 ![
+                  "CASH",
+                  "CBHI",
+                  "Credit",
+                  "Free of Charge",
+                  "Digital",
+                  "TeleBirr",
+                  "CBE Mobile Banking",
+                ].includes(params.row.name) &&
                   <>
+
                     <IconButton
                       onClick={() => {
                         handleOpen(category, params.row.name, params.row.id);
@@ -316,12 +323,14 @@ const PaymentManagementLists = () => {
                     >
                       <Edit />
                     </IconButton>
+
                     <IconButton
                       onClick={() => handleDelete(category, params.row.id)}
                       color="error"
                     >
                       <Delete />
                     </IconButton>
+
                   </>
                 ),
                 flex: 0.5,
