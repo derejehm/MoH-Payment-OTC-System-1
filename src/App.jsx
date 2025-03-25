@@ -28,7 +28,7 @@ import DynamicFieldsForm from './pages/hospitalpayment/DynamicFieldsForm.jsx'
 import FinancialDashboard from "./components/FinancialDashboard.jsx";
 import useTokenCheck from "./services/useTokenCheck.js";
 import PaymentManagementLists from "./components/PaymentManagementLists.jsx";
-
+import CollectedReport from "./pages/reports/CollectedReport.jsx";
 
 const tokenvalue = getTokenValue()
 
@@ -113,6 +113,15 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute
             element={<ReportPage />}
+            allowedRoles={["User"]}
+          />
+        ),
+      },
+      {
+        path: "collection-reports",
+        element: (
+          <ProtectedRoute
+            element={<CollectedReport />}
             allowedRoles={["User"]}
           />
         ),

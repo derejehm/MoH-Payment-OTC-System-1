@@ -14,6 +14,7 @@ import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import { getTokenValue } from "../../services/user_service";
 import StorageIcon from "@mui/icons-material/Storage";
+import { LibraryBooksTwoTone } from "@mui/icons-material";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -192,7 +193,8 @@ const Sidebar = () => {
               </>
             )}
             {role?.toUpperCase() === "USER" &&
-              (tokenvalue?.UserType?.toUpperCase() === "CASHIER" || tokenvalue?.UserType?.toUpperCase() === "SUPERVISOR")&& (
+              (tokenvalue?.UserType?.toUpperCase() === "CASHIER" ||
+                tokenvalue?.UserType?.toUpperCase() === "SUPERVISOR") && (
                 <>
                   <Item
                     title="Payments"
@@ -226,6 +228,13 @@ const Sidebar = () => {
                     title="Reports"
                     to="/reports"
                     icon={<BarChartOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Collection Reports"
+                    to="/collection-reports"
+                    icon={<LibraryBooksTwoTone />}
                     selected={selected}
                     setSelected={setSelected}
                   />
