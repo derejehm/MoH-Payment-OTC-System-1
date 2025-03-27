@@ -11,9 +11,13 @@ import {
   FormControlLabel,
   Divider,
   TextField,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import PersonIcon from "@mui/icons-material/Person";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import { toast } from "react-toastify";
 
 const AgreementDialog = ({
   open,
@@ -23,6 +27,8 @@ const AgreementDialog = ({
   BackdropProps,
 }) => {
   const [agreed, setAgreed] = useState(false);
+  const [verifyEmp, setVerifyEmp] = useState(undefined);
+  const [empVerified,setEmpVerified] = useState("no")
   const [signature, setSignature] = useState("");
   const [empIdError, setEmpIdError] = useState("");
   const [empNameError, setEmpNameError] = useState("");
@@ -49,7 +55,21 @@ const AgreementDialog = ({
     if (name === "empName") {
       empNameValidation(value);
     }
+    setVerifyEmp(undefined)
+    setEmpVerified("no")
   };
+
+  const handleVerify = async()=>{
+    try{
+      setEmpVerified("yes")
+      console.log("verify this>>",formData)
+    }catch(error)
+    {
+      console.error(error)
+      setVerifyEmp(undefined)
+      setEmpVerified('no')
+    }
+  }
 
   const empIdValidation = (value) => {
     if (!/^TS[0-9]{1,}$/.test(value) || value.lengh < 4) {
@@ -72,6 +92,11 @@ const AgreementDialog = ({
   const handleSubmit = (e) => {
     // Handle agreement submission
     e.preventDefault();
+    if(empVerified === 'no' || empVerified.length <= 0)
+    {
+      toast.info('Please first verify the employee !!')
+      return;
+    }
     onSubmit(formData);
   };
 
@@ -95,6 +120,9 @@ const AgreementDialog = ({
     }
   }, [open]);
 
+
+
+
   return (
     <>
       <Dialog
@@ -112,7 +140,8 @@ const AgreementDialog = ({
         <form onSubmit={handleSubmit} style={{ width: "100%" }}>
           <DialogContent>
             <Typography variant="h6" gutterBottom>
-              Amount to Collect: ETB &nbsp;{selectedTransaction?.collectedAmount}
+              Amount to Collect: ETB &nbsp;
+              {selectedTransaction?.collectedAmount}
             </Typography>
             <Divider sx={{ my: 2 }} />
 
@@ -129,6 +158,7 @@ const AgreementDialog = ({
               fullWidth
               label="Employee ID"
               name="empId"
+              type="password"
               value={formData.empId.toUpperCase()}
               onChange={handleChange}
               margin="normal"
@@ -138,6 +168,21 @@ const AgreementDialog = ({
               helperText={empIdError}
               InputProps={{
                 startAdornment: <CreditCardIcon sx={{ mr: 1 }} />,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton edge="end">
+                      <VerifiedIcon
+                        color={
+                          verifyEmp !== undefined
+                            ? verifyEmp
+                              ? "success"
+                              : "error"
+                            : ""
+                        }
+                      />
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
               // disabled
             />
@@ -145,6 +190,7 @@ const AgreementDialog = ({
               fullWidth
               label="Employee Name"
               name="empName"
+              type="password"
               value={formData.empName}
               onChange={handleChange}
               margin="normal"
@@ -154,10 +200,37 @@ const AgreementDialog = ({
               helperText={empNameError}
               InputProps={{
                 startAdornment: <PersonIcon sx={{ mr: 1 }} />,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton edge="end">
+                      <VerifiedIcon
+                        color={
+                          verifyEmp !== undefined
+                            ? verifyEmp
+                              ? "success"
+                              : "error"
+                            : ""
+                        }
+                      />
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
               // disabled
             />
-
+            <Button
+              variant="contained"
+              onClick={handleVerify}
+              disabled={
+                !agreed ||
+                !formData.empId ||
+                !formData.empName ||
+                empIdError.length > 0 ||
+                empNameError.length > 0
+              }
+            >
+              Verify Employee
+            </Button>
             <Box mt={2}>
               <Typography variant="body2" color="textSecondary" gutterBottom>
                 Electronic Signature:
@@ -165,12 +238,12 @@ const AgreementDialog = ({
               <Button
                 variant="outlined"
                 fullWidth
+                disabled={!verifyEmp}
                 onClick={() => {
                   const date = new Date();
                   date.setHours(date.getHours() + 3); // Add 3 hours to UTC time
                   setSignature(date.toISOString());
-                }
-                }
+                }}
               >
                 {signature || "Click to Sign"}
               </Button>

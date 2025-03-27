@@ -16,6 +16,9 @@ import { getTokenValue } from "../../services/user_service";
 import StorageIcon from "@mui/icons-material/Storage";
 import { LibraryBooksTwoTone } from "@mui/icons-material";
 import Tooltip from "@mui/material/Tooltip";
+import BusinessIcon from "@mui/icons-material/Business";
+
+
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -55,8 +58,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       localStorage.setItem("currentNav", JSON.stringify(selected));
     }
   }, [selected]);
-
-
 
   return (
     <Box
@@ -200,6 +201,24 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                   title="Payment Channels"
                   to="/payment-channel"
                   icon={<AccountBalanceWalletOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+              </>
+            )}
+            {role?.toUpperCase() === "ADMIN" && (
+              <>
+                <Typography
+                  variant="h6"
+                  color={colors.grey[300]}
+                  sx={{ m: "15px 0 5px 20px" }}
+                >
+                  Bankers Management
+                </Typography>
+                <Item
+                  title="Bankers Manager"
+                  to="/BankerManagment"
+                  icon={<BusinessIcon />}
                   selected={selected}
                   setSelected={setSelected}
                 />

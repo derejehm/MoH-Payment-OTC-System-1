@@ -29,7 +29,7 @@ import FinancialDashboard from "./components/FinancialDashboard.jsx";
 import useTokenCheck from "./services/useTokenCheck.js";
 import PaymentManagementLists from "./components/PaymentManagementLists.jsx";
 import CollectedReport from "./pages/reports/CollectedReport.jsx";
-
+import EmployeeUploadManager from "./components/EmployeeUploadManager.jsx";
 const tokenvalue = getTokenValue()
 
 const token = getSession();
@@ -132,6 +132,15 @@ const router = createBrowserRouter([
           <ProtectedRoute
             element={<ProfilePage />}
             allowedRoles={["Admin","User"]}
+          />
+        ),
+      },
+      {
+        path: "BankerManagment",
+        element: (
+          <ProtectedRoute
+            element={<EmployeeUploadManager />}
+            allowedRoles={["Admin"]}
           />
         ),
       },

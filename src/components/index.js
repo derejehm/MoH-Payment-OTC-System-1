@@ -11,3 +11,4 @@ export {default as UserManagment} from './UserManagment';
 export {default as RoleManagment} from './RoleManagment';
 export {default as LanguageToggle} from './LanguageToggle'
 export {default as FinancialDashboard} from './FinancialDashboard'
+export {default as EmployeeUploadManager} from './EmployeeUploadManager'
