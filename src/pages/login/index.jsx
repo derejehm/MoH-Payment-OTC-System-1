@@ -15,10 +15,11 @@ import logo from "../../assets/logo.png";
 import Topbar from "../global/Topbar";
 import bag from "../../assets/bg16.jpg";
 import { login } from "../../services/user_service";
+import {useTheme} from "@mui/material";
 // import { useAuth } from "../../contexts/AuthProvider"
 
 const Login = () => {
- 
+  const theme = useTheme();
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
@@ -50,7 +51,7 @@ const Login = () => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#478594",
+        backgroundColor: theme.palette.mode === "dark" ? "#1a1a1a" : "#478594",
       }}
     >
       <Topbar />
@@ -127,7 +128,6 @@ const Login = () => {
               flexDirection: "column",
               alignItems: "center",
               borderRadius: "20px",
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
               boxShadow: 3,
             }}
           >

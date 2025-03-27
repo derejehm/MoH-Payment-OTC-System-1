@@ -10,7 +10,7 @@ import { getSession } from "../services/user_service";
 function RootLayout() {
   const token = getSession();
   const [theme, colorMode] = useMode();
-  const [isSidebar, setIsSidebar] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <>
@@ -18,12 +18,26 @@ function RootLayout() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           {token ? (
-            <Box className="app" alignContent="flex">
-              <Sidebar isSidebar={isSidebar} />
-              <main className="content" style={{ marginLeft: "270px" }}>
-                <Topbar setIsSidebar={setIsSidebar} />
+            <Box display="flex" alignContent="flex-start">
+              <Sidebar
+                isCollapsed={isCollapsed}
+                setIsCollapsed={setIsCollapsed}
+              />
+
+              <Box
+                component="main"
+                sx={{
+                  flexGrow: 1, // Allows content to stretch
+                  transition: "margin-left 0.3s ease",
+                  marginLeft: isCollapsed ? "80px" : "270px",
+                  width: isCollapsed
+                    ? "calc(100% - 80px)"
+                    : "calc(100% - 270px)", // Ensure proper stretching
+                }}
+              >
+                <Topbar setIsCollapsed={setIsCollapsed} />
                 <Outlet />
-              </main>
+              </Box>
             </Box>
           ) : (
             <Login />

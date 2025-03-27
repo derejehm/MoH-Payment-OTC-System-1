@@ -15,7 +15,7 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import { getTokenValue } from "../../services/user_service";
 import StorageIcon from "@mui/icons-material/Storage";
 import { LibraryBooksTwoTone } from "@mui/icons-material";
-
+import Tooltip from "@mui/material/Tooltip";
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -36,12 +36,11 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 
 const tokenvalue = getTokenValue();
 // Departement,UserType
-const Sidebar = () => {
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const role =
     tokenvalue["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(() => {
     const storedCurrentPage = localStorage.getItem("currentNav");
     try {
@@ -56,6 +55,8 @@ const Sidebar = () => {
       localStorage.setItem("currentNav", JSON.stringify(selected));
     }
   }, [selected]);
+
+
 
   return (
     <Box
@@ -169,16 +170,28 @@ const Sidebar = () => {
                 />
               </>
             )}
+
             {(role?.toUpperCase() === "ADMIN" ||
               (role?.toUpperCase() === "USER" &&
                 tokenvalue?.UserType?.toUpperCase() === "CASHIER")) && (
-              <Typography
-                variant="h6"
-                color={colors.grey[300]}
-                sx={{ m: "15px 0 5px 20px" }}
+              <Tooltip
+                title={isCollapsed ? "Payment Management" : ""}
+                placement="right"
               >
-                Payment Management
-              </Typography>
+                <Typography
+                  variant="h6"
+                  color={colors.grey[300]}
+                  sx={{
+                    m: "15px 0 5px 20px",
+                    whiteSpace: isCollapsed ? "nowrap" : "normal",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  Payment Management
+                </Typography>
+              </Tooltip>
             )}
 
             {role?.toUpperCase() === "ADMIN" && (
@@ -203,13 +216,32 @@ const Sidebar = () => {
                     selected={selected}
                     setSelected={setSelected}
                   />
-                  <Typography
-                    variant="h6"
-                    color={colors.grey[300]}
-                    sx={{ m: "15px 0 5px 20px" }}
-                  >
-                    Money Submission
-                  </Typography>
+                  {isCollapsed ? (
+                    <>
+                      <Typography
+                        variant="h6"
+                        color={colors.grey[300]}
+                        sx={{
+                          m: "15px 0 5px 20px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        Money Submission
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Typography
+                        variant="h6"
+                        color={colors.grey[300]}
+                        sx={{ m: "15px 0 5px 20px" }}
+                      >
+                        Money Submission
+                      </Typography>
+                    </>
+                  )}
                   <Item
                     title="Submit Money"
                     to="/money-submission"
