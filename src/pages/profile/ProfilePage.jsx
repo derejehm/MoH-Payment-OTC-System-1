@@ -17,8 +17,8 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../../utils/api";
-import { getTokenValue,logout } from "../../services/user_service";
-const tokenvalue = getTokenValue()
+import { getTokenValue, logout } from "../../services/user_service";
+const tokenvalue = getTokenValue();
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(5),
@@ -33,7 +33,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const ProfilePage = () => {
   const username = tokenvalue.name;
-  const role = tokenvalue["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  const role =
+    tokenvalue["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
   const [userData, setUserData] = useState({ username: "", phone: "" });
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -82,8 +83,6 @@ const ProfilePage = () => {
 
     fetchAdminInfo(username);
   }, []);
-
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -147,8 +146,9 @@ const ProfilePage = () => {
         const response = await api.put(apiPath, {
           username: username,
           phoneNumber: userData.phone,
+          departement: tokenvalue?.Departement,
+          userType: tokenvalue?.UserType,
         });
-
         toast.success(response?.data?.message);
       } catch (error) {
         console.error(error.message);
@@ -198,13 +198,12 @@ const ProfilePage = () => {
         newPassword: passwords.confirmPassword,
       }); //&& (role.toLowerCase() === 'admin'&& response?.data?.message?.charAt(0) === "A")
       if (response.status === 200) {
-         
         const message = response?.data?.message;
 
         if (role?.toLowerCase() === "admin") {
           if (message?.charAt(0) === "A") {
             toast.success(message);
-          } 
+          }
         } else if (role?.toLowerCase() === "user") {
           toast.success(message);
         }
@@ -217,7 +216,7 @@ const ProfilePage = () => {
 
         setTimeout(() => {
           const release = async () => {
-            logout()
+            logout();
           };
           release();
         }, 2000);
