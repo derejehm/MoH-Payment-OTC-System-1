@@ -810,7 +810,7 @@ const HospitalPayment = () => {
       //   window.open(url, "_blank"); // Open in a new tab
       // }
     } catch (error) {
-      console.error(error.message);
+      console.error(error);
     }
   };
 
