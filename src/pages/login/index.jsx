@@ -15,11 +15,12 @@ import logo from "../../assets/logo.png";
 import Topbar from "../global/Topbar";
 import bag from "../../assets/bg16.jpg";
 import { login } from "../../services/user_service";
-import {useTheme} from "@mui/material";
+import { useTheme } from "@mui/material";
 // import { useAuth } from "../../contexts/AuthProvider"
 
 const Login = () => {
   const theme = useTheme();
+
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
@@ -195,7 +196,7 @@ const Login = () => {
                   color: "white",
                   fontWeight: "bold",
                   "&:hover": {
-                    backgroundColor: "#1f5459"
+                    backgroundColor: "#1f5459",
                   },
                 }}
                 disabled={mutation.isPending}

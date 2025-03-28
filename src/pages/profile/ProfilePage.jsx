@@ -32,7 +32,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }));
 
 const ProfilePage = () => {
-  const username = tokenvalue.name;
+  const username = tokenvalue?.name;
   const role =
     tokenvalue["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
   const [userData, setUserData] = useState({ username: "", phone: "" });

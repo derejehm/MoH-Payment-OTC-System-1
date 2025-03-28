@@ -14,6 +14,7 @@ import {
   CircularProgress,
   colors,
 } from "@mui/material";
+import numberToWords from "number-to-words"; 
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { DataGrid } from "@mui/x-data-grid";
 import { jsPDF } from "jspdf";
@@ -91,6 +92,8 @@ const HospitalPayment = () => {
   const [registeredCBHI, setRegisteredCBHI] = useState(null);
   const [isPrintLoading, setIsPrintLoading] = useState(false);
   const [isAdditionalCBHILoading, setIsAdditionalCBHILoading] = useState(false);
+
+// console.log(numberToWords.toWords('15252'))
 
   //Inserting evry changet that the user makes on print into the loacl storage using the useEffect hooks
   // onchange of payments the useEffect runs

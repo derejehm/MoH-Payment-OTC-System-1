@@ -8,14 +8,13 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import { getTokenValue } from "../../services/user_service";
 import StorageIcon from "@mui/icons-material/Storage";
 import { LibraryBooksTwoTone } from "@mui/icons-material";
-import Tooltip from "@mui/material/Tooltip";
 import BusinessIcon from "@mui/icons-material/Business";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
@@ -147,13 +146,16 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
             {role?.toUpperCase() === "ADMIN" && (
               <>
-                <Typography
-                  variant="h6"
-                  color={colors.grey[300]}
-                  sx={{ m: "15px 0 5px 20px" }}
-                >
-                  User Management
-                </Typography>
+                {!isCollapsed && (
+                  <Typography
+                    variant="h6"
+                    color={colors.grey[300]}
+                    sx={{ m: "15px 0 5px 20px" }}
+                  >
+                    User Management
+                  </Typography>
+                )}
+
                 <Item
                   title="User Management"
                   to="/UserManagment"
@@ -171,13 +173,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
               </>
             )}
 
-            {(role?.toUpperCase() === "ADMIN" ||
-              (role?.toUpperCase() === "USER" &&
-                tokenvalue?.UserType?.toUpperCase() === "CASHIER")) && (
-              <Tooltip
-                title={isCollapsed ? "Payment Management" : ""}
-                placement="right"
-              >
+            {!isCollapsed &&
+              (role?.toUpperCase() === "ADMIN" ||
+                (role?.toUpperCase() === "USER" &&
+                  tokenvalue?.UserType?.toUpperCase() === "CASHIER")) && (
                 <Typography
                   variant="h6"
                   color={colors.grey[300]}
@@ -191,8 +190,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 >
                   Payment Management
                 </Typography>
-              </Tooltip>
-            )}
+              )}
 
             {role?.toUpperCase() === "ADMIN" && (
               <>
@@ -207,13 +205,16 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             )}
             {role?.toUpperCase() === "ADMIN" && (
               <>
-                <Typography
-                  variant="h6"
-                  color={colors.grey[300]}
-                  sx={{ m: "15px 0 5px 20px" }}
-                >
-                  Bankers Management
-                </Typography>
+                {!isCollapsed && (
+                  <Typography
+                    variant="h6"
+                    color={colors.grey[300]}
+                    sx={{ m: "15px 0 5px 20px" }}
+                  >
+                    Bankers Management
+                  </Typography>
+                )}
+
                 <Item
                   title="Bankers Manager"
                   to="/BankerManagment"
@@ -221,13 +222,16 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-                <Typography
-                  variant="h6"
-                  color={colors.grey[300]}
-                  sx={{ m: "15px 0 5px 20px" }}
-                >
-                  Hospital Management
-                </Typography>
+                {!isCollapsed && (
+                  <Typography
+                    variant="h6"
+                    color={colors.grey[300]}
+                    sx={{ m: "15px 0 5px 20px" }}
+                  >
+                    Hospital Management
+                  </Typography>
+                )}
+
                 <Item
                   title="Hospital Manager"
                   to="/HospitalManagment"
@@ -248,31 +252,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     selected={selected}
                     setSelected={setSelected}
                   />
-                  {isCollapsed ? (
-                    <>
-                      <Typography
-                        variant="h6"
-                        color={colors.grey[300]}
-                        sx={{
-                          m: "15px 0 5px 20px",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        Money Submission
-                      </Typography>
-                    </>
-                  ) : (
-                    <>
-                      <Typography
-                        variant="h6"
-                        color={colors.grey[300]}
-                        sx={{ m: "15px 0 5px 20px" }}
-                      >
-                        Money Submission
-                      </Typography>
-                    </>
+                  {!isCollapsed && (
+                    <Typography
+                      variant="h6"
+                      color={colors.grey[300]}
+                      sx={{ m: "15px 0 5px 20px" }}
+                    >
+                      Money Submission
+                    </Typography>
                   )}
                   <Item
                     title="Submit Money"
@@ -281,13 +268,16 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     selected={selected}
                     setSelected={setSelected}
                   />
-                  <Typography
-                    variant="h6"
-                    color={colors.grey[300]}
-                    sx={{ m: "15px 0 5px 20px" }}
-                  >
-                    Report
-                  </Typography>
+                  {!isCollapsed && (
+                    <Typography
+                      variant="h6"
+                      color={colors.grey[300]}
+                      sx={{ m: "15px 0 5px 20px" }}
+                    >
+                      Report
+                    </Typography>
+                  )}
+
                   <Item
                     title="Reports"
                     to="/reports"
@@ -308,13 +298,16 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
               tokenvalue?.UserType?.toUpperCase() === "SUPERVISOR" &&
               tokenvalue?.Departement?.toUpperCase() === "TSEDEY BANK" && (
                 <>
-                  <Typography
-                    variant="h6"
-                    color={colors.grey[300]}
-                    sx={{ m: "15px 0 5px 20px" }}
-                  >
-                    Cash Managmet
-                  </Typography>
+                  {!isCollapsed && (
+                    <Typography
+                      variant="h6"
+                      color={colors.grey[300]}
+                      sx={{ m: "15px 0 5px 20px" }}
+                    >
+                      Cash Managmet
+                    </Typography>
+                  )}
+
                   <Item
                     title="Cash Managmet"
                     to="/cash-managment"

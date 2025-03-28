@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./UserManagment.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { IconButton, Button, getOffsetLeft } from "@mui/material";
+import { IconButton, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PasswordIcon from "@mui/icons-material/VpnKey";
@@ -24,7 +24,6 @@ const UserManagment = () => {
   const [selectedDelete, setSelectedDelete] = useState("");
   const [selectedDeleteUser, setSelectedDeleteUser] = useState("");
   const [username, setUserName] = useState("");
-
 
   const handlConfirm = async (params) => {
     setConfirmModalOpen(true);
@@ -68,8 +67,6 @@ const UserManagment = () => {
     }
   };
 
-
-
   const handleResetSubmit = async (username, password, confirmPassword) => {
     try {
       const response = await api.post("/Admin/reset-password", {
@@ -80,9 +77,9 @@ const UserManagment = () => {
       handleCleare();
     } catch (error) {
       console.error(error.message);
-      toast.error(error?.response?.data?.message || "Internal Server Error")
+      toast.error(error?.response?.data?.message || "Internal Server Error");
     } finally {
-      setOpenResetModal(false)
+      setOpenResetModal(false);
     }
   };
 
@@ -193,15 +190,12 @@ const UserManagment = () => {
       }
     } catch (error) {
       console.error(error);
-      if(Array.isArray( error?.response?.data))
-      {
-        error?.response?.data?.map(item=>toast.error(item.description))
-      }else{
-        toast.error(error?.response?.data?.message  || "Internal Server Error.");
+      if (Array.isArray(error?.response?.data)) {
+        error?.response?.data?.map((item) => toast.error(item.description));
+      } else {
+        toast.error(error?.response?.data?.message || "Internal Server Error.");
       }
-      
-      
-    } 
+    }
   };
 
   const handleEditSubmit = async (editedUserData) => {
@@ -259,12 +253,7 @@ const UserManagment = () => {
         clearUserData={handleCleare}
       />
       <div className="data-grid-container">
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          autoHeight
-          pageSizeOptions={[5, 10]}
-        />
+        <DataGrid rows={rows} columns={columns} autoHeight />
       </div>
       <ToastContainer />
     </div>

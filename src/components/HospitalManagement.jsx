@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import {
   Container,
   Paper,
   Typography,
-  Button,
   IconButton,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { toast,ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import EditIcon from "@mui/icons-material/Edit";
 import EditHospitalMgmt from "./EditHospitalMgmt";
 
@@ -20,7 +21,6 @@ const HospitalManagement = () => {
 
   const handleEditUser = async (params) => {
     try {
-       console.log(params.row)
        setSelected(params.row)
        setOpenDialog(true)
     } catch (error) {
@@ -29,14 +29,14 @@ const HospitalManagement = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "Employee ID", flex: 1 },
-    { field: "hospital", headerName: "Employee Name", flex: 1 },
-    { field: "director", headerName: "Email", flex: 1 },
-    { field: "directorEmail", headerName: "Assigned Hospital", flex: 1 },
-    { field: "directorPhone", headerName: "Assigned Hospital", flex: 1 },
-    { field: "district", headerName: "Assigned Hospital", flex: 1 },
-    { field: "districtEmail", headerName: "Assigned Hospital", flex: 1 },
-    { field: "districtPhone", headerName: "Assigned Hospital", flex: 1 },
+    { field: "id", headerName: "ID", flex: 1 },
+    { field: "hospital", headerName: "Hospital Name", flex: 1 },
+    { field: "director", headerName: "Director", flex: 1 },
+    { field: "directorEmail", headerName: "Director Email", flex: 1 },
+    { field: "directorPhone", headerName: "Director Mobile", flex: 1 },
+    { field: "district", headerName: "District", flex: 1 },
+    { field: "districtEmail", headerName: "District Email", flex: 1 },
+    { field: "districtPhone", headerName: "District Mobile", flex: 1 },
     {
         field: "actions",
         headerName: "Actions",
@@ -58,43 +58,34 @@ const HospitalManagement = () => {
   const mocData = [
     {
       id: "1",
-      hospital: "Employee Name",
-      director: "Email",
-      directorEmail: "Assigned Hospital",
-      directorPhone: "Assigned Hospital",
-      district: "Assigned Hospital",
-      districtEmail: "Assigned Hospital",
-      districtPhone: "Assigned Hospital",
+      hospital: "DB TENA TABIYA",
+      director: "Teshale Magna",
+      directorEmail: "teshe@gmail.com",
+      directorPhone: "+251953",
+      district: "Shimels",
+      districtEmail: "shimels@gmail.com",
+      districtPhone: "+2510710",
       contactMethode:"SMS",
     },
     {
         id: "2",
-        hospital: "Employee Name",
-        director: "Email",
-        directorEmail: "Assigned Hospital",
-        directorPhone: "Assigned Hospital",
-        district: "Assigned Hospital",
-        districtEmail: "Assigned Hospital",
-        districtPhone: "Assigned Hospital",
+        hospital: "DB Referal Hospital",
+        director: "Kbrom Teshome",
+        directorEmail: "kbrom@gmail.com",
+        directorPhone: "+251953",
+        district: "Shimels",
+        districtEmail: "shimels@gmail.com",
+        districtPhone: "+2510710",
         contactMethode:"EMAIL",
-      },
-      {
-        id: "3",
-        hospital: "Employee Name",
-        director: "Email",
-        directorEmail: "Assigned Hospital",
-        directorPhone: "Assigned Hospital",
-        district: "Assigned Hospital",
-        districtEmail: "Assigned Hospital",
-        districtPhone: "Assigned Hospital",
-        contactMethode:"SMS",
       },
   ];
 
   const handleEditSubmit = async(data)=>{
     try{
         setIsEditing(true)
-        console.log("Efit this one>>",data)
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        console.log("Edit this one>>",data)
+        setOpenDialog(false)
     }catch(error)
     {
         console.error(error)
@@ -122,6 +113,7 @@ const handleReset =()=>{
         resetUserData ={handleReset}
         adding = {editing}
       />
+      <ToastContainer/>
     </Container>
   );
 };

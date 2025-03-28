@@ -16,29 +16,30 @@ function RootLayout() {
     <>
       <ColorModeContext.Provider value={colorMode}>
         <ThemeProvider theme={theme}>
-          <CssBaseline />
+        <CssBaseline />
           {token ? (
-            <Box display="flex" alignContent="flex-start">
-              <Sidebar
-                isCollapsed={isCollapsed}
-                setIsCollapsed={setIsCollapsed}
-              />
+            <>
+            
+              <Box display="flex" alignContent="flex-start">
+                <Sidebar
+                  isCollapsed={isCollapsed}
+                  setIsCollapsed={setIsCollapsed}
+                />
 
-              <Box
-                component="main"
-                sx={{
-                  flexGrow: 1, // Allows content to stretch
-                  transition: "margin-left 0.3s ease",
-                  marginLeft: isCollapsed ? "80px" : "270px",
-                  width: isCollapsed
-                    ? "calc(100% - 80px)"
-                    : "calc(100% - 270px)", // Ensure proper stretching
-                }}
-              >
-                <Topbar setIsCollapsed={setIsCollapsed} />
-                <Outlet />
+                <Box
+                  component="main"
+                  style={{
+                    flexGrow: 1, // Allows content to stretch
+                    transition: "margin-left 0.3s ease",
+                    marginLeft: isCollapsed ? "80px" : "270px",
+                    width: `calc(100% - ${isCollapsed ? 80 : 270}px)`, // Ensure proper stretching
+                  }}
+                >
+                  <Topbar setIsCollapsed={setIsCollapsed} />
+                  <Outlet />
+                </Box>
               </Box>
-            </Box>
+            </>
           ) : (
             <Login />
           )}
