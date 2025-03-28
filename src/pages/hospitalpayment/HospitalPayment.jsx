@@ -792,25 +792,23 @@ const HospitalPayment = () => {
   const handleOpenPage = async () => {
     try {
       const receptId = formData?.trxref;
-      const response = await api.get(`/Lookup/payment-verify/${receptId}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      let url;
-      if (formData.digitalChannel.toUpperCase().includes("TELEBIRR")) {
-        url = response.data.find(
-          (item) => item.institution.toLowerCase() === "telebirr"
-        )?.qrLink;
-      } else if (formData.digitalChannel.toUpperCase().includes("CBE")) {
-        url = response.data.find(
-          (item) => item.institution.toLowerCase() === "cbe"
-        )?.qrLink;
-      }
+      const response = await api.get(`/Lookup/payment-verify/${receptId}?channel=${formData?.digitalChannel.toUpperCase()}`);
 
-      if (url) {
-        window.open(url, "_blank"); // Open in a new tab
-      }
+      console.log(response?.data)
+      // let url;
+      // if (formData.digitalChannel.toUpperCase().includes("TELEBIRR")) {
+      //   url = response.data.find(
+      //     (item) => item.institution.toLowerCase() === "telebirr"
+      //   )?.qrLink;
+      // } else if (formData.digitalChannel.toUpperCase().includes("CBE")) {
+      //   url = response.data.find(
+      //     (item) => item.institution.toLowerCase() === "cbe"
+      //   )?.qrLink;
+      // }
+
+      // if (url) {
+      //   window.open(url, "_blank"); // Open in a new tab
+      // }
     } catch (error) {
       console.error(error.message);
     }
