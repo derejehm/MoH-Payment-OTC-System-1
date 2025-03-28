@@ -93,8 +93,6 @@ const HospitalPayment = () => {
   const [isPrintLoading, setIsPrintLoading] = useState(false);
   const [isAdditionalCBHILoading, setIsAdditionalCBHILoading] = useState(false);
 
-// console.log(numberToWords.toWords('15252'))
-
   //Inserting evry changet that the user makes on print into the loacl storage using the useEffect hooks
   // onchange of payments the useEffect runs
   useEffect(() => {
@@ -403,191 +401,366 @@ const HospitalPayment = () => {
       );
 
       if (response.status === 201) {
-        setReceiptOpen(false);
-        setFormData({
-          cardNumber: "",
-          amount: "",
-          method: "",
-          description: "",
-          reason: [],
-          digitalChannel: "",
-          woreda: "",
-          trxref: "",
-          organization: "",
-        });
-        setRegisteredPatient(null);
-        setPatientName("");
-        setCbhiId("");
-        setRegisteredCBHI(null);
-        toast.success(`Payment Regitstered Under ${response?.data?.refNo}`);
-        setRefresh((prev) => !prev);
-        generatePDF(newPayment, response?.data?.refNo);
-        setIsPrintLoading(false);
+        try{
+          const add = await api.put("/Payment/patient-info", {
+            patientCardNumber: formData?.cardNumber,
+            hospital: tokenvalue?.Hospital,
+            cashier: tokenvalue?.name,
+          });
+         const final = {
+          ...newPayment,
+          patientName: add?.data[0]?.patientName,
+        };
+          setReceiptOpen(false);
+          setFormData({
+            cardNumber: "",
+            amount: "",
+            method: "",
+            description: "",
+            reason: [],
+            digitalChannel: "",
+            woreda: "",
+            trxref: "",
+            organization: "",
+          });
+          setRegisteredPatient(null);
+          setPatientName("");
+          setCbhiId("");
+          setRegisteredCBHI(null);
+          toast.success(`Payment Regitstered Under ${response?.data?.refNo}`);
+          setRefresh((prev) => !prev);
+          generatePDF(final, response?.data?.refNo);
+          setIsPrintLoading(false);
+
+        }catch(error)
+        {
+          console.error(error)
+        }
+
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const generatePDF = (data, refNo) => {
-    try {
-      const doc = new jsPDF();
-
-      // Set initial position
-      let yPos = 20;
-
-      // Add Header
-      doc.setFontSize(16);
-      doc.setFont("helvetica", "bold");
-      doc.text("*************************", 105, yPos, { align: "center" });
-      yPos += 8;
-      doc.text("HOSPITAL PAYMENT RECEIPT", 105, yPos, { align: "center" });
-      yPos += 8;
-      doc.text("*************************", 105, yPos, { align: "center" });
-      yPos += 10;
-
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(tokenvalue?.Hospital, 105, yPos, { align: "center" });
-      yPos += 8;
-
-      //Tiket Number
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Recietp NO: ${refNo}`, 20, yPos);
-      yPos += 6;
-
-      // Address and Date
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Address: Debre Brihan`, 20, yPos);
-      yPos += 6;
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPos);
-      yPos += 6;
-      doc.text(`Cashier: ${tokenvalue?.name}`, 20, yPos);
-      yPos += 10;
-
-      // Separator Line
-      doc.setLineWidth(0.5);
-      doc.line(20, yPos, 190, yPos);
-      yPos += 10;
-
-      // Card Number
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Card Number:`, 20, yPos);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${data.cardNumber || "N/A"}`, 70, yPos);
-      yPos += 8;
-
-      // Payment Method
-      doc.setFont("helvetica", "bold");
-      doc.text(`Payment Method:`, 20, yPos);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${data.method || "N/A"}`, 70, yPos);
-      yPos += 8;
-
-      // Additional Details
-      if (data.method.toUpperCase().includes("DIGITAL")) {
+   const generatePDF = (data, refNo) => {
+      try {
+        const doc = new jsPDF();
+        // Set initial position
+        let yPos = 20;
+  
+        // Add Header
+        doc.setFontSize(16);
         doc.setFont("helvetica", "bold");
-        doc.text("Channel:", 20, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(`${data.digitalChannel || "N/A"}`, 70, yPos);
+        doc.text("*************************", 105, yPos, { align: "center" });
         yPos += 8;
-
+        doc.text("HOSPITAL PAYMENT RECEIPT", 105, yPos, { align: "center" });
+        yPos += 8;
+        doc.text("*************************", 105, yPos, { align: "center" });
+        yPos += 10;
+  
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text("Transaction Ref No:", 20, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(`${data.trxref || "N/A"}`, 70, yPos);
+        doc.text(`${tokenvalue?.Hospital || "N/A"}`, 105, yPos, { align: "center" });
         yPos += 8;
-      } else if (data.method.toUpperCase().includes("CBHI")) {
+  
+        //Tiket Number
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Recietp NO: ${refNo || "N/A"}`, 20, yPos);
+        yPos += 6;
+  
+        // Address and Date
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Address: Debre Brihan`, 20, yPos);
+        yPos += 6;
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPos);
+        yPos += 6;
+        doc.text(`Cashier: ${tokenvalue?.name || "N/A"}`, 20, yPos);
+        yPos += 10;
+  
+        // Separator Line
+        doc.setLineWidth(0.5);
+        doc.line(20, yPos, 190, yPos);
+        yPos += 10;
+  
+        // Name
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text(`Woreda:`, 20, yPos);
+        doc.text(`Patient Name:`, 20, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.woreda || "N/A"}`, 70, yPos);
+        doc.text(`${data?.patientName || "N/A"}`, 70, yPos);
         yPos += 8;
-      } else if (data.method.toUpperCase().includes("CREDIT")) {
+  
+        // Card Number
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text(`Organization:`, 20, yPos);
+        doc.text(`Card Number:`, 20, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.organization || "N/A"}`, 70, yPos);
+        doc.text(`${data.cardNumber || "N/A"}`, 70, yPos);
         yPos += 8;
+  
+        // Payment Method
+        doc.setFont("helvetica", "bold");
+        doc.text(`Payment Method:`, 20, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${data.method || "N/A"}`, 70, yPos);
+        yPos += 8;
+  
+        // Additional Details
+        if (data.method.toUpperCase().includes("DIGITAL")) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Channel:", 20, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(`${data.digitalChannel || "N/A"}`, 70, yPos);
+          yPos += 8;
+  
+          doc.setFont("helvetica", "bold");
+          doc.text("Transaction Ref No:", 20, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(`${data.trxref || "N/A"}`, 70, yPos);
+          yPos += 8;
+        } else if (data.method.toUpperCase().includes("CBHI")) {
+          doc.setFont("helvetica", "bold");
+          doc.text(`Woreda:`, 20, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(`${data.woreda || "N/A"}`, 70, yPos);
+          yPos += 8;
+        } else if (data.method.toUpperCase().includes("CREDIT")) {
+          doc.setFont("helvetica", "bold");
+          doc.text(`Organization:`, 20, yPos);
+          doc.setFont("helvetica", "normal");
+          doc.text(`${data.organization || "N/A"}`, 70, yPos);
+          yPos += 8;
+        }
+  
+        // Separator Line
+        doc.line(20, yPos, 190, yPos);
+        yPos += 10;
+  
+        // Items Table Header
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Reason`, 20, yPos);
+        doc.text(`Price`, 160, yPos);
+        yPos += 8;
+  
+        // Items Data
+        doc.setFont("helvetica", "normal");
+        data?.amount?.forEach((item) => {
+          doc.text(`${item.purpose}`, 20, yPos);
+          doc.text(
+            `${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`,
+            160,
+            yPos
+          );
+          yPos += 8;
+        });
+  
+        // Separator Line
+        doc.line(20, yPos, 190, yPos);
+        yPos += 10;
+  
+        // Total Amount
+        const totalAmount = data?.amount
+          ?.map((item) => item.Amount)
+          .reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+  
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total In Figure`, 20, yPos);
+        doc.text(`${formatAccounting2(totalAmount.toFixed(2))}`, 160, yPos);
+        yPos += 10;
+        //
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total In Words : `, 20, yPos);
+        doc.text(`${numberToWords.toWords(totalAmount.toFixed(2))} birr`, 51, yPos);
+        yPos += 10;
+  
+        // Thank You Message
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("*************************", 105, yPos, { align: "center" });
+        yPos += 8;
+        doc.text("THANK YOU", 105, yPos, { align: "center" });
+        yPos += 8;
+        doc.text("*************************", 105, yPos, { align: "center" });
+        yPos += 10;
+  
+        // Barcode (Simulated with Number)
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.text("123456778963578021", 105, yPos, { align: "center" });
+        yPos += 10;
+  
+        // Save PDF
+        doc.save("receipt.pdf");
+      } catch (error) {
+        console.error(error.message);
       }
+    };
+    
+  // const generatePDF = (data, refNo) => {
+  //   try {
+  //     const doc = new jsPDF();
 
-      // Reason
-      doc.setFont("helvetica", "bold");
-      doc.text(`Reason:`, 20, yPos);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${data?.reason}`, 70, yPos);
-      yPos += 8;
+  //     // Set initial position
+  //     let yPos = 20;
 
-      // Description
-      doc.setFont("helvetica", "bold");
-      doc.text(`Description:`, 20, yPos);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${data.description || "N/A"}`, 70, yPos);
-      yPos += 10;
+  //     // Add Header
+  //     doc.setFontSize(16);
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text("*************************", 105, yPos, { align: "center" });
+  //     yPos += 8;
+  //     doc.text("HOSPITAL PAYMENT RECEIPT", 105, yPos, { align: "center" });
+  //     yPos += 8;
+  //     doc.text("*************************", 105, yPos, { align: "center" });
+  //     yPos += 10;
 
-      // Separator Line
-      doc.line(20, yPos, 190, yPos);
-      yPos += 10;
+  //     doc.setFontSize(12);
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(tokenvalue?.Hospital, 105, yPos, { align: "center" });
+  //     yPos += 8;
 
-      // Items Table Header
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Description`, 20, yPos);
-      doc.text(`Price`, 160, yPos);
-      yPos += 8;
+  //     //Tiket Number
+  //     doc.setFontSize(10);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text(`Recietp NO: ${refNo}`, 20, yPos);
+  //     yPos += 6;
 
-      // Items Data
-      doc.setFont("helvetica", "normal");
-      data?.amount?.forEach((item) => {
-        doc.text(`${item.purpose}`, 20, yPos);
-        doc.text(
-          `${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`,
-          160,
-          yPos
-        );
-        yPos += 8;
-      });
+  //     // Address and Date
+  //     doc.setFontSize(10);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text(`Address: Debre Brihan`, 20, yPos);
+  //     yPos += 6;
+  //     doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPos);
+  //     yPos += 6;
+  //     doc.text(`Cashier: ${tokenvalue?.name}`, 20, yPos);
+  //     yPos += 10;
 
-      // Separator Line
-      doc.line(20, yPos, 190, yPos);
-      yPos += 10;
+  //     // Separator Line
+  //     doc.setLineWidth(0.5);
+  //     doc.line(20, yPos, 190, yPos);
+  //     yPos += 10;
 
-      // Total Amount
-      const totalAmount = data?.amount
-        ?.map((item) => item.Amount)
-        .reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+  //     // Card Number
+  //     doc.setFontSize(12);
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(`Card Number:`, 20, yPos);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text(`${data.cardNumber || "N/A"}`, 70, yPos);
+  //     yPos += 8;
 
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(`TOTAL`, 20, yPos);
-      doc.text(`${formatAccounting2(totalAmount.toFixed(2))}`, 160, yPos);
-      yPos += 10;
+  //     // Payment Method
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(`Payment Method:`, 20, yPos);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text(`${data.method || "N/A"}`, 70, yPos);
+  //     yPos += 8;
 
-      // Thank You Message
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("*************************", 105, yPos, { align: "center" });
-      yPos += 8;
-      doc.text("THANK YOU", 105, yPos, { align: "center" });
-      yPos += 8;
-      doc.text("*************************", 105, yPos, { align: "center" });
-      yPos += 10;
+  //     // Additional Details
+  //     if (data.method.toUpperCase().includes("DIGITAL")) {
+  //       doc.setFont("helvetica", "bold");
+  //       doc.text("Channel:", 20, yPos);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.text(`${data.digitalChannel || "N/A"}`, 70, yPos);
+  //       yPos += 8;
 
-      // Barcode (Simulated with Number)
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.text("123456778963578021", 105, yPos, { align: "center" });
-      yPos += 10;
+  //       doc.setFont("helvetica", "bold");
+  //       doc.text("Transaction Ref No:", 20, yPos);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.text(`${data.trxref || "N/A"}`, 70, yPos);
+  //       yPos += 8;
+  //     } else if (data.method.toUpperCase().includes("CBHI")) {
+  //       doc.setFont("helvetica", "bold");
+  //       doc.text(`Woreda:`, 20, yPos);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.text(`${data.woreda || "N/A"}`, 70, yPos);
+  //       yPos += 8;
+  //     } else if (data.method.toUpperCase().includes("CREDIT")) {
+  //       doc.setFont("helvetica", "bold");
+  //       doc.text(`Organization:`, 20, yPos);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.text(`${data.organization || "N/A"}`, 70, yPos);
+  //       yPos += 8;
+  //     }
 
-      // Save PDF
-      doc.save("receipt.pdf");
-    } catch (error) {
-      console.error(error.message);
-    }
-  };
+  //     // Reason
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(`Reason:`, 20, yPos);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text(`${data?.reason}`, 70, yPos);
+  //     yPos += 8;
+
+  //     // Description
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(`Description:`, 20, yPos);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text(`${data.description || "N/A"}`, 70, yPos);
+  //     yPos += 10;
+
+  //     // Separator Line
+  //     doc.line(20, yPos, 190, yPos);
+  //     yPos += 10;
+
+  //     // Items Table Header
+  //     doc.setFontSize(12);
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(`Description`, 20, yPos);
+  //     doc.text(`Price`, 160, yPos);
+  //     yPos += 8;
+
+  //     // Items Data
+  //     doc.setFont("helvetica", "normal");
+  //     data?.amount?.forEach((item) => {
+  //       doc.text(`${item.purpose}`, 20, yPos);
+  //       doc.text(
+  //         `${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`,
+  //         160,
+  //         yPos
+  //       );
+  //       yPos += 8;
+  //     });
+
+  //     // Separator Line
+  //     doc.line(20, yPos, 190, yPos);
+  //     yPos += 10;
+
+  //     // Total Amount
+  //     const totalAmount = data?.amount
+  //       ?.map((item) => item.Amount)
+  //       .reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
+
+  //     doc.setFontSize(12);
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text(`TOTAL`, 20, yPos);
+  //     doc.text(`${formatAccounting2(totalAmount.toFixed(2))}`, 160, yPos);
+  //     yPos += 10;
+
+  //     // Thank You Message
+  //     doc.setFontSize(14);
+  //     doc.setFont("helvetica", "bold");
+  //     doc.text("*************************", 105, yPos, { align: "center" });
+  //     yPos += 8;
+  //     doc.text("THANK YOU", 105, yPos, { align: "center" });
+  //     yPos += 8;
+  //     doc.text("*************************", 105, yPos, { align: "center" });
+  //     yPos += 10;
+
+  //     // Barcode (Simulated with Number)
+  //     doc.setFontSize(12);
+  //     doc.setFont("helvetica", "normal");
+  //     doc.text("123456778963578021", 105, yPos, { align: "center" });
+  //     yPos += 10;
+
+  //     // Save PDF
+  //     doc.save("receipt.pdf");
+  //   } catch (error) {
+  //     console.error(error.message);
+  //   }
+  // };
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -663,11 +836,13 @@ const HospitalPayment = () => {
           setRegisteredPatient(response?.data[0]);
           setPatientName(response?.data?.map((item) => item.patientName));
           setIsAdditionalInfo(true);
+          return response?.data[0]
         }
       }
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data);
+      return {}
     } finally {
       setAddPatienthLoad(false);
     }
