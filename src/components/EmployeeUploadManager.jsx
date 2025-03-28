@@ -5,22 +5,17 @@ import {
   Typography,
   Button,
   IconButton,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { CancelPresentationTwoTone } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import axios from "axios";
 
 const EmployeeUploadManager = () => {
   const [fileData, setFileData] = useState([]);
   const [data, setData] = useState([]);
-  const [deleConf, setDelConf] = useState(false);
+
   const handleFileUpload = (event) => {
     try {
       const file = event.target.files[0];
@@ -66,21 +61,14 @@ const EmployeeUploadManager = () => {
   const handleDeleteAll = () => {
     setFileData([]);
     setData([]);
-    setDelConf(false);
   };
 
-  const handleDeleteConf = () => {
-    setDelConf(true);
-  };
-
-  const handleClose = () => {
-    setDelConf(false);
-  };
 
   const columns = [
-    { field: "id", headerName: "Employee ID", width: 150 },
-    { field: "name", headerName: "Employee Name", width: 200 },
-    { field: "hospital", headerName: "Assigned Hospital", width: 250 },
+    { field: "id", headerName: "Employee ID", flex: 1 },
+    { field: "name", headerName: "Employee Name", flex: 1 },
+    { field: "email", headerName: "Email", flex: 1},
+    { field: "hospital", headerName: "Assigned Hospital", flex: 1 },
   ];
 
   return (
@@ -106,11 +94,12 @@ const EmployeeUploadManager = () => {
           </Button>
         </label>
         <IconButton
-          onClick={handleDeleteConf}
+          onClick={handleDeleteAll}
           color="error"
-          sx={{ marginLeft: 2 }}
+          sx={{ marginLeft: 2}}
         >
-          <DeleteIcon />
+        <CancelPresentationTwoTone />
+
         </IconButton>
         <Button
           variant="contained"
@@ -132,36 +121,9 @@ const EmployeeUploadManager = () => {
         <DataGrid
           rows={fileData.length <= 0 ? data : fileData}
           columns={columns}
-          getRowId={(row) => row.id}
+          // getRowId={(row) => row.id}
         />
       </Paper>
-
-      <Dialog
-        open={deleConf}
-        onClose={(event, reason) => {
-          if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
-            handleClose(); // Reset and close the modal
-          }
-        }}
-        maxWidth="sm"
-        fullWidth
-        BackdropProps={{ "aria-hidden": false }}
-      >
-        <DialogTitle>Delete Confirmation</DialogTitle>
-
-        <DialogContent>
-          <Typography variant="h6" gutterBottom>
-            {fileData.length > 0 ? "Are you sure to delete All from File??" : "Are you sure to delete All Registered??"}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" color="warning" onClick={handleDeleteAll}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   );
 };

@@ -190,7 +190,6 @@ const AgreementDialog = ({
               fullWidth
               label="Employee Name"
               name="empName"
-              type="password"
               value={formData.empName}
               onChange={handleChange}
               margin="normal"

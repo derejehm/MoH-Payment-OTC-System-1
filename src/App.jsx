@@ -1,45 +1,52 @@
-import React,{useEffect} from "react";
+import React, { useEffect } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Dashboard from "./pages/dashboard";
-import Bar from "./pages/bar";
-import Form from "./pages/form";
-import Line from "./pages/line";
-import Pie from "./pages/pie";
-import FAQ from "./pages/faq";
-import Login from "./pages/login";
-import Geography from "./pages/geography";
-import Calendar from "./pages/calendar/calendar";
-import UserManagment from "./components/UserManagment.jsx";
-import RoleManagment from "./components/RoleManagment.jsx";
-import NotFoundPage from "./pages/errorPage/NotFoundPage ";
-import RootLayout from "./pages/Root.js";
+import {
+  Dashboard,
+  Bar,
+  Form,
+  Line,
+  Pie,
+  FAQ,
+  Login,
+  Geography,
+  Calendar,
+  NotFoundPage,
+  RootLayout,
+  ProfilePage,
+  HospitalPayment,
+  ReportPage,
+  BankerComponent,
+  CollectedReport,
+} from "./pages";
+
 import { logout as logoutAction } from "./services/user_service.js";
-import ProfilePage from "./pages/profile/ProfilePage.jsx";
-import { getTokenValue,getSession,logout } from "./services/user_service.js";
-import HospitalPayment from "./pages/hospitalpayment/HospitalPayment.jsx";
-import ReportPage from "./pages/reports/ReportPage.jsx";
-import BankerComponent from './pages/supervisors/BankerComponent.jsx'
-import DynamicFieldsForm from './pages/hospitalpayment/DynamicFieldsForm.jsx'
-import FinancialDashboard from "./components/FinancialDashboard.jsx";
+import { getTokenValue, getSession, logout } from "./services/user_service.js";
 import useTokenCheck from "./services/useTokenCheck.js";
-import PaymentManagementLists from "./components/PaymentManagementLists.jsx";
-import CollectedReport from "./pages/reports/CollectedReport.jsx";
-import EmployeeUploadManager from "./components/EmployeeUploadManager.jsx";
-const tokenvalue = getTokenValue()
+
+import {
+  HospitalManagement,
+  UserManagment,
+  RoleManagment,
+  FinancialDashboard,
+  PaymentManagementLists,
+  EmployeeUploadManager,
+} from "./components";
+
+const tokenvalue = getTokenValue();
 
 const token = getSession();
 const ProtectedRoute = ({ element, allowedRoles }) => {
-
-  const role = tokenvalue["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  const role =
+    tokenvalue["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
   if (!token) {
-    logout()
-    return
+    logout();
+    return;
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
@@ -76,7 +83,7 @@ const router = createBrowserRouter([
         path: "payment-channel",
         element: (
           <ProtectedRoute
-            element={<PaymentManagementLists/>}
+            element={<PaymentManagementLists />}
             allowedRoles={["Admin"]}
           />
         ),
@@ -111,10 +118,7 @@ const router = createBrowserRouter([
       {
         path: "reports",
         element: (
-          <ProtectedRoute
-            element={<ReportPage />}
-            allowedRoles={["User"]}
-          />
+          <ProtectedRoute element={<ReportPage />} allowedRoles={["User"]} />
         ),
       },
       {
@@ -131,7 +135,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute
             element={<ProfilePage />}
-            allowedRoles={["Admin","User"]}
+            allowedRoles={["Admin", "User"]}
           />
         ),
       },
@@ -140,6 +144,15 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute
             element={<EmployeeUploadManager />}
+            allowedRoles={["Admin"]}
+          />
+        ),
+      },
+      {
+        path: "HospitalManagment",
+        element: (
+          <ProtectedRoute
+            element={<HospitalManagement />}
             allowedRoles={["Admin"]}
           />
         ),
@@ -176,8 +189,7 @@ const router = createBrowserRouter([
 const queryClient = new QueryClient();
 
 function App() {
-  useTokenCheck()
-
+  useTokenCheck();
 
   return (
     <QueryClientProvider client={queryClient}>

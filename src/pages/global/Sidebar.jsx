@@ -8,7 +8,7 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
-import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
@@ -17,7 +17,6 @@ import StorageIcon from "@mui/icons-material/Storage";
 import { LibraryBooksTwoTone } from "@mui/icons-material";
 import Tooltip from "@mui/material/Tooltip";
 import BusinessIcon from "@mui/icons-material/Business";
-
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -219,6 +218,20 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                   title="Bankers Manager"
                   to="/BankerManagment"
                   icon={<BusinessIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+                <Typography
+                  variant="h6"
+                  color={colors.grey[300]}
+                  sx={{ m: "15px 0 5px 20px" }}
+                >
+                  Hospital Management
+                </Typography>
+                <Item
+                  title="Hospital Manager"
+                  to="/HospitalManagment"
+                  icon={<LocalHospitalIcon />}
                   selected={selected}
                   setSelected={setSelected}
                 />
