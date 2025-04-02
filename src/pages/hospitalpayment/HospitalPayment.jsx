@@ -14,6 +14,7 @@ import {
   CircularProgress,
   colors,
 } from "@mui/material";
+import { PDFDocument, rgb } from "pdf-lib";
 import numberToWords from "number-to-words";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { DataGrid } from "@mui/x-data-grid";
@@ -54,6 +55,39 @@ const formatAccounting2 = (num) => {
 const formatAccounting = (num) => {
   const formatted = formatter.format(Math.abs(num));
   return num < 0 ? `(${formatted})` : formatted;
+};
+
+const generateAndOpenPDF = async (error) => {
+  const message =
+    error?.response?.data !== undefined
+      ? error?.response?.data?.message
+      : "Incorrect Receipt ID";
+
+  // Create a new PDF document
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([600, 400]);
+  const { width, height } = page.getSize();
+
+  // Add text to the PDF
+  page.drawText(message, {
+    x: 50,
+    y: height - 100,
+    size: 50,
+    color: rgb(0, 0, 0),
+  });
+
+  // Serialize the PDF to bytes
+  const pdfBytes = await pdfDoc.save();
+
+  // Create a Blob and URL
+  const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" });
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+
+  // Open the generated PDF
+  window.open(pdfUrl, "_blank");
+
+  // Revoke the URL after a delay to free memory
+  setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
 };
 
 const HospitalPayment = () => {
@@ -641,57 +675,78 @@ const HospitalPayment = () => {
     { field: "purpose", headerName: "Reason", width: 200 },
   ];
 
+  const openNewTab = (id) => {
+    window.open(
+      `https://cs.bankofabyssinia.com/slip/?trx=${id}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   const handleOpenPage = async () => {
     try {
       const receptId = formData?.trxref;
+
       let config = {};
+      let url;
       if (
-        formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
+        formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING") ||
+        formData.digitalChannel.toUpperCase().includes("TELEBIRR")
       ) {
-        config = { responseType: "blob" };
-      } else {
-        config = {};
-      }
-      const response = await api.get(
-        `/Lookup/payment-verify/${receptId}?channel=${formData?.digitalChannel.toUpperCase()}`,
-        config
-      );
-
-
-      if (
-        formData.digitalChannel.toUpperCase().includes("TELEBIRR") ||
-        formData.digitalChannel.toUpperCase().includes("BANK OF ABYSSINIA")
-      ) {
-        const newTab = window.open();
-        if (newTab) {
-          const newTabDocument = newTab.document;
-
-          // Create a root div
-          const rootDiv = newTabDocument.createElement("div");
-          rootDiv.id = "root";
-          newTabDocument.body.appendChild(rootDiv);
-
-          // Render the component in the new tab
-          const root = ReactDOM.createRoot(rootDiv);
-          root.render(<RenderPDF html={response?.data} />);
+        url = `/Lookup/payment-verify/${receptId}?channel=${formData?.digitalChannel.toUpperCase()}`;
+        if (
+          formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
+        ) {
+          config = { responseType: "blob" };
+        } else {
+          config = {};
         }
       } else if (
-        formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
+        formData.digitalChannel.toUpperCase().includes("BANK OF ABYSSINIA")
       ) {
-        const pdfBlob = new Blob([response.data], { type: "text/html" });
+        // url = `/Lookup/redirecttoboa?transactionId=${receptId}`;
+        openNewTab(receptId);
+        // <a href={`https://cs.bankofabyssinia.com/slip/?trx=${receptId}`} target="_blank">View Slip</a>
+      }
 
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl, "_blank");
+      if (
+        !formData.digitalChannel.toUpperCase().includes("BANK OF ABYSSINIA")
+      ) {
+        const response = await api.get(url, config);
+
+        if (formData.digitalChannel.toUpperCase().includes("TELEBIRR")) {
+          const newTab = window.open();
+          if (newTab) {
+            const newTabDocument = newTab.document;
+
+            // Create a root div
+            const rootDiv = newTabDocument.createElement("div");
+            rootDiv.id = "root";
+            newTabDocument.body.appendChild(rootDiv);
+
+            // Render the component in the new tab
+            const root = ReactDOM.createRoot(rootDiv);
+            root.render(<RenderPDF html={response?.data} />);
+          }
+        } else if (
+          formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
+        ) {
+
+          const pdfBlob = new Blob([response?.data], {
+            type: "application/pdf",
+          });
+
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          window.open(pdfUrl, "_blank");
+        }
       }
     } catch (error) {
       console.error(error);
       if (
         formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
       ) {
-        const pdfBlob = new Blob([error?.response?.data],{ type: "text/html" });
+      await generateAndOpenPDF(error)
 
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl, "_blank");
       }
     }
   };

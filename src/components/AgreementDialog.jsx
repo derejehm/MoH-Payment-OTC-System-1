@@ -19,6 +19,17 @@ import PersonIcon from "@mui/icons-material/Person";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { toast } from "react-toastify";
 
+const formatter2 = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: true,
+});
+
+const formatAccounting2 = (num) => {
+  const formatted = formatter2.format(Math.abs(num));
+  return num < 0 ? `(${formatted})` : formatted;
+};
+
 const AgreementDialog = ({
   open,
   onClose,
@@ -141,7 +152,7 @@ const AgreementDialog = ({
           <DialogContent>
             <Typography variant="h6" gutterBottom>
               Amount to Collect: ETB &nbsp;
-              {selectedTransaction?.collectedAmount}
+              {formatAccounting2(selectedTransaction?.collectedAmount)}
             </Typography>
             <Divider sx={{ my: 2 }} />
 
