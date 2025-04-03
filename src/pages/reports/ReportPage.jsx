@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Container,
   Tabs,
   Tab,
   Paper,
@@ -10,86 +9,109 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
+import { GetAllPaymentByDate, GetAllPaymentType } from "../../services/report_service";
+import { getTokenValue } from "../../services/user_service";
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 
-const paymentMethods = [
-  "All",
-  "Cash",
-  "Digital",
-  "CBHI",
-  "Free of Charge",
-  "Credit",
-];
-const mockData = [
-  {
-    id: 1,
-    cardNumber: "123456",
-    amount: 500,
-    method: "Cash",
-    reason: "Routine Checkup",
-    description: "General consultation fee",
-    date: "2025-03-15",
-  },
-  {
-    id: 2,
-    cardNumber: "789012",
-    amount: 1200,
-    method: "Digital",
-    reason: "Surgery",
-    description: "Pre-surgery payment",
-    date: "2025-03-15",
-  },
-  {
-    id: 3,
-    cardNumber: "345678",
-    amount: 800,
-    method: "CBHI",
-    reason: "Emergency",
-    description: "Emergency treatment",
-    date: "2025-03-16",
-  },
-  {
-    id: 4,
-    cardNumber: "901234",
-    amount: 400,
-    method: "Free Service",
-    reason: "Vaccination",
-    description: "Government-sponsored vaccination",
-    date: "2025-03-16",
-  },
-  {
-    id: 5,
-    cardNumber: "567890",
-    amount: 1000,
-    method: "Credit",
-    reason: "Maternity",
-    description: "Hospital maternity charges",
-    date: "2025-03-17",
-  },
+
+
+
+var paymentMethods = [
+  //"All",
+  // "CASH",
+  // "Digital",
+  // "CBHI",
+  // "Free Service",
+  // "Credit",
 ];
 
 const ReportPage = () => {
-  const [payments, setPayments] = useState(() => {
-    const storedPayments = localStorage.getItem("hospitalPayments");
-    return storedPayments ? JSON.parse(storedPayments) : mockData;
-  });
+  const [payments, setPayments] = useState([]);
 
-  const [selectedMethod, setSelectedMethod] = useState("All");
+  const [selectedMethod, setSelectedMethod] = useState("ALL");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filteredPayments, setFilteredPayments] = useState(payments);
+  
+  
+var tokenValue=getTokenValue();
 
-  useEffect(() => {
-    localStorage.setItem("hospitalPayments", JSON.stringify(payments));
-  }, [payments]);
+  useEffect( () =>  {
+    
+
+    
+     // paymentMethods.push(payType);
+      
+
+      async function fetchData() {
+        // You can await here
+        paymentMethods= await GetAllPaymentType();
+        // ...
+      }
+      fetchData();
+
+      
+
+  }, []);
+
+  const StyledGridOverlay = styled('div')(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    '& .no-results-primary': {
+      fill: '#3D4751',
+      ...theme.applyStyles('light', {
+        fill: '#AEB8C2',
+      }),
+    },
+    '& .no-results-secondary': {
+      fill: '#1D2126',
+      ...theme.applyStyles('light', {
+        fill: '#E8EAED',
+      }),
+    },
+  }));
+  function CustomNoResultsOverlay() {
+    return (
+      <StyledGridOverlay>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          width={96}
+          viewBox="0 0 523 299"
+          aria-hidden
+          focusable="false"
+        >
+          <path
+            className="no-results-primary"
+            d="M262 20c-63.513 0-115 51.487-115 115s51.487 115 115 115 115-51.487 115-115S325.513 20 262 20ZM127 135C127 60.442 187.442 0 262 0c74.558 0 135 60.442 135 135 0 74.558-60.442 135-135 135-74.558 0-135-60.442-135-135Z"
+          />
+          <path
+            className="no-results-primary"
+            d="M348.929 224.929c3.905-3.905 10.237-3.905 14.142 0l56.569 56.568c3.905 3.906 3.905 10.237 0 14.143-3.906 3.905-10.237 3.905-14.143 0l-56.568-56.569c-3.905-3.905-3.905-10.237 0-14.142ZM212.929 85.929c3.905-3.905 10.237-3.905 14.142 0l84.853 84.853c3.905 3.905 3.905 10.237 0 14.142-3.905 3.905-10.237 3.905-14.142 0l-84.853-84.853c-3.905-3.905-3.905-10.237 0-14.142Z"
+          />
+          <path
+            className="no-results-primary"
+            d="M212.929 185.071c-3.905-3.905-3.905-10.237 0-14.142l84.853-84.853c3.905-3.905 10.237-3.905 14.142 0 3.905 3.905 3.905 10.237 0 14.142l-84.853 84.853c-3.905 3.905-10.237 3.905-14.142 0Z"
+          />
+          <path
+            className="no-results-secondary"
+            d="M0 43c0-5.523 4.477-10 10-10h100c5.523 0 10 4.477 10 10s-4.477 10-10 10H10C4.477 53 0 48.523 0 43ZM0 89c0-5.523 4.477-10 10-10h80c5.523 0 10 4.477 10 10s-4.477 10-10 10H10C4.477 99 0 94.523 0 89ZM0 135c0-5.523 4.477-10 10-10h74c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 181c0-5.523 4.477-10 10-10h80c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 227c0-5.523 4.477-10 10-10h100c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM523 227c0 5.523-4.477 10-10 10H413c-5.523 0-10-4.477-10-10s4.477-10 10-10h100c5.523 0 10 4.477 10 10ZM523 181c0 5.523-4.477 10-10 10h-80c-5.523 0-10-4.477-10-10s4.477-10 10-10h80c5.523 0 10 4.477 10 10ZM523 135c0 5.523-4.477 10-10 10h-74c-5.523 0-10-4.477-10-10s4.477-10 10-10h74c5.523 0 10 4.477 10 10ZM523 89c0 5.523-4.477 10-10 10h-80c-5.523 0-10-4.477-10-10s4.477-10 10-10h80c5.523 0 10 4.477 10 10ZM523 43c0 5.523-4.477 10-10 10H413c-5.523 0-10-4.477-10-10s4.477-10 10-10h100c5.523 0 10 4.477 10 10Z"
+          />
+        </svg>
+        <Box sx={{ mt: 2 }}>No results found.</Box>
+      </StyledGridOverlay>
+    );
+  }
 
   useEffect(() => {
     setFilteredPayments(
       payments.filter(
         (payment) =>
-          (selectedMethod === "All" || payment.method === selectedMethod) &&
-          (!startDate ||
-            !endDate ||
-            (payment.date >= startDate && payment.date <= endDate))
+          (selectedMethod === "ALL" || payment.type === selectedMethod) 
       )
     );
   }, [selectedMethod, startDate, endDate, payments]);
@@ -102,10 +124,7 @@ const ReportPage = () => {
     return payments
       .filter(
         (payment) =>
-          (method === "All" || payment.method === method) &&
-          (!startDate ||
-            !endDate ||
-            (payment.date >= startDate && payment.date <= endDate))
+          (method === "ALL" || payment.type === method) 
       )
       .reduce((sum, payment) => sum + Number(payment.amount), 0); // Ensure amount is treated as a number
   };
@@ -121,24 +140,54 @@ const ReportPage = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 90 },
+  
+    { field: "refNo", headerName: "Ref No.", width: 200 },
+    { field: "hospitalName", headerName: "Hospital Name", width: 150 },
     { field: "cardNumber", headerName: "Card Number", width: 150 },
+    { field: "purpose", headerName: "Service", width: 150 },    
     { field: "amount", headerName: "Amount", width: 120 },
-    { field: "method", headerName: "Payment Method", width: 150 },
-    { field: "reason", headerName: "Reason", width: 200 },
+    { field: "type", headerName: "Payment Method", width: 150 },
     { field: "description", headerName: "Description", width: 200 },
-    { field: "date", headerName: "Date", width: 150 },
-  ];
-  const handleReportRequest = async()=>{
-    console.log({startDate:startDate,endDate:endDate,selectedMethod:selectedMethod})
-  }
+    { field: "createdOn", headerName: "Date", width: 150 },
+    { field: "createdby", headerName: "Created by", width: 150 },
 
+    
+  ];
+  const handleReportRequest = async () => {
+    try {
+      if(startDate === "" || endDate === ""){
+        alert("Please select start and end date");
+        return;
+      }
+      const datas = await GetAllPaymentByDate({
+        startDate,
+        endDate,
+        user: tokenValue.name,
+      });
+
+      if(datas.length >0){
+        setPayments(datas);
+
+        setFilteredPayments(
+          payments.filter(
+            (payment) =>
+              (selectedMethod === "ALL" || payment.type === selectedMethod) 
+          )
+        );
+
+      }
+     
+  
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    }
+  };
   return (
-    <Container>
-      <Typography variant="h5" gutterBottom>
+   <>
+      <Typography variant="h5" gutterBottom sx={{ margin: 2 }}>
         Payment Reports
       </Typography>
-      <Paper sx={{ padding: 2, marginBottom: 2 }}>
+      <Paper sx={{ padding: 2, margin: 2 }}>
         <TextField
           label="Start Date"
           type="date"
@@ -173,30 +222,32 @@ const ReportPage = () => {
         >
           {paymentMethods.map((method) => (
             <Tab
-              key={method}
-              label={`${method} (${calculateTotal(method)})`}
-              value={method}
+              key={method.type}
+              label={`${method.type} (${calculateTotal(method.type)})`}
+              value={method.type}
             />
           ))}
         </Tabs>
       </Paper>
-      <Paper sx={{ height: 400, marginBottom: 2 }}>
+      <Paper sx={{ height: 400, margin: 2 }}>
         <DataGrid
           rows={filteredPayments.length ? filteredPayments : []}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
+          slots={{
+            noResultsOverlay: CustomNoResultsOverlay,
+          }}
         />
       </Paper>
-      <Button
+      <Button     
+      sx={{ marginLeft: 2 }}
         variant="contained"
         color="primary"
-        fullWidth
+    
         onClick={exportToExcel}
       >
         Export to Excel
       </Button>
-    </Container>
+      </>
   );
 };
 
