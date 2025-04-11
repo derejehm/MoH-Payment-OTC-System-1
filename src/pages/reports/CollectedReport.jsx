@@ -21,7 +21,6 @@ const tokenvalue = getTokenValue();
 const CollectedReport = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [statusFilter, setStatusFilter] = useState("collected");
   const [showOnlyHighAmount, setShowOnlyHighAmount] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [data, setData] = useState([]);
@@ -33,10 +32,15 @@ const CollectedReport = () => {
         startDate: startDate,
         endDate: endDate,
         user: tokenvalue?.name,
-        isCollected: statusFilter === "uncollected" ? 0 : 1,
+        isCollected: 0,
       });
       if (response?.data.length <= 0) toast.info("Report not found!");
-      setData(response?.data.length <= 0 ? new Array() : response?.data);
+      const data = 
+      response?.data.length >0 ? response?.data?.map(({ collectionId, ...rest }) => ({
+          id: collectionId,
+          ...rest,
+        })) || [] : [];
+      setData(data.length <= 0 ? new Array() : data);
     } catch (error) {
       console.error("Error fetching report data:", error);
     }
@@ -48,12 +52,11 @@ const CollectedReport = () => {
         const filteredData = data?.filter((item) => {
           if (
             showOnlyHighAmount &&
-            item.amount < Math.max(...data?.map((item) => item?.amount))
+            item.collectedAmount < Math.max(...data?.map((item) => item?.collectedAmount))
           )
             return false;
           return true;
         });
-
         setFilteredData(filteredData);
       } else {
         toast.info("There is No High Amount!");
@@ -72,10 +75,10 @@ const CollectedReport = () => {
   }, [showOnlyHighAmount]);
 
   const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const ws = XLSX.utils.json_to_sheet(filteredData.length > 0  ? filteredData:data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Filtered Report");
-    XLSX.writeFile(wb, `Payments_Report.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, `Collection Report of ${tokenvalue?.name}` );
+    XLSX.writeFile(wb, `Collection_Report from ${startDate} to ${endDate}.xlsx`);
   };
 
   return (
@@ -115,14 +118,6 @@ const CollectedReport = () => {
             InputLabelProps={{ shrink: true }}
             required
           />
-          <ToggleButtonGroup
-            value={statusFilter}
-            exclusive
-            onChange={(e, newValue) => setStatusFilter(newValue || "collected")}
-          >
-            <ToggleButton value="collected">Collected</ToggleButton>
-            <ToggleButton value="uncollected">Uncollected</ToggleButton>
-          </ToggleButtonGroup>
           <FormControlLabel
             control={
               <Checkbox
@@ -141,16 +136,16 @@ const CollectedReport = () => {
         <DataGrid
           rows={showOnlyHighAmount ? filteredData : data}
           columns={[
-            { field: "id", headerName: "ID", width: 90 },
-            { field: "startDate", headerName: "Start Date", width: 150 },
-            { field: "endDate", headerName: "End Date", width: 120 },
-            { field: "amount", headerName: "Amount", width: 150 },
-            { field: "status", headerName: "Status", width: 150 },
-            { field: "collector", headerName: "Collector", width: 200 },
+            { field: "id", headerName: "ID", width: 40 },
+            { field: "fromDate", headerName: "Start Date", width: 150 },
+            { field: "toDate", headerName: "End Date", width: 140 },
+            { field: "collectedAmount", headerName: "Amount", width: 130 },
+            { field: "collectedBy", headerName: "Collector", width: 200 },
+            { field: "casher", headerName: "Cashier", width: 200 },
             {
-              field: "collectedDate",
+              field: "collectedOn",
               headerName: "Collected Date",
-              width: 150,
+              width: 170,
             },
           ]}
         />

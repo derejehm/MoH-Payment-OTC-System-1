@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import {jwtDecode} from "jwt-decode";
 import { logout } from "./user_service";
-
+import moment from "moment/moment";
 
 const tokenName = ".otc"
 
@@ -17,11 +17,12 @@ const useTokenCheck = () => {
 
       try {
         const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000; 
+        // const currentTime = Date.now() / 1000; 
+        const currentTime = Date.parse(moment.utc().format()) / 1000; 
 
-        if (decoded.exp < currentTime) {
-          logout();
-        }
+        // if (decoded.exp < currentTime) {
+        //   logout();
+        // }
       } catch (error) {
         console.error("Invalid token:", error);
       }

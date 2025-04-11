@@ -10,11 +10,16 @@ import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
 import { CancelPresentationTwoTone } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import axios from "axios";
+import api from "../utils/api";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { getTokenValue } from "../services/user_service";
 
+const tokenvalue = getTokenValue();
 const EmployeeUploadManager = () => {
   const [fileData, setFileData] = useState([]);
   const [data, setData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const handleFileUpload = (event) => {
     try {
@@ -28,8 +33,20 @@ const EmployeeUploadManager = () => {
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
-        setFileData(parsedData);
+        const pp = parsedData.map(({ HospitalName, ...rest }) => ({
+          assignedLocation: HospitalName,
+          ...rest,
+        }));
+
+        const withIds = pp.map((prev, index) => ({
+          ...prev,
+          id: index + 1,
+        }));
+
+        setFileData(withIds);
+        event.target.value = null;
       };
+
       reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error(error);
@@ -38,37 +55,65 @@ const EmployeeUploadManager = () => {
 
   const handleUploadToDatabase = async () => {
     try {
-      await axios.post("/api/employees/upload", { data: fileData });
-      alert("Data uploaded successfully!");
+      const response = await api.post("/Collection/register_collector", {
+        employeeID: fileData.map((Item) => Item?.employeeID),
+        employeeName: fileData.map((Item) => Item?.employeeName),
+        employeePhone: fileData.map((Item) => Item?.employeePhone),
+        employeeEmail: fileData.map((Item) => Item?.employeeEmail),
+        assignedLocation: fileData.map((Item) => Item?.assignedLocation),
+        assignedAs: fileData.map((Item) => Item?.assignedAs),
+        assignedBy: fileData.map((Item) => Item?.assignedBy),
+        contactMethod: fileData.map((Item) => Item?.contactMethod),
+        user: tokenvalue?.name,
+      });
+      toast.success("Upload Successful.");
+      setRefresh((prev) => !prev);
+      setFileData([]);
     } catch (error) {
       console.error("Upload error:", error);
+      toast.error(error?.response?.data || "Internal Server Error.");
     }
   };
 
   useEffect(() => {
     const fetchEmp = async () => {
       try {
-        setData([]);
+        const response = await api.get(
+          `/Collection/collector/${tokenvalue?.name}`
+        );
+        setData(response?.data);
       } catch (error) {
         console.error(error);
+        toast.error(error?.response?.data || "Failde To Load list.");
       }
     };
 
     fetchEmp();
-  }, []);
+  }, [refresh]);
 
   const handleDeleteAll = () => {
     setFileData([]);
-    setData([]);
   };
 
-
   const columns = [
-    { field: "id", headerName: "Employee ID", flex: 1 },
-    { field: "name", headerName: "Employee Name", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1},
-    { field: "hospital", headerName: "Assigned Hospital", flex: 1 },
+    { field: "employeeID", headerName: "Employee ID", flex: 1 },
+    { field: "employeeName", headerName: "Employee Name", flex: 1 },
+    { field: "employeePhone", headerName: "Phone", flex: 1 },
+    { field: "employeeEmail", headerName: "Email", flex: 1 },
+    { field: "assignedLocation", headerName: "Assigned Hospital", flex: 1 },
+    { field: "assignedAs", headerName: "Assigned As", flex: 1 },
+    { field: "assignedBy", headerName: "Assigned By", flex: 1 },
+    { field: "contactMethod", headerName: "Contact Method", flex: 1 },
   ];
+
+  const CustomErrorOverlay = () => {
+    toast.error("Id Missing");
+    return (
+      <div style={{ padding: "20px", color: "red" }}>
+        An error occurred: Id Missing
+      </div>
+    );
+  };
 
   return (
     <Container>
@@ -79,7 +124,9 @@ const EmployeeUploadManager = () => {
         <input
           accept=".xlsx, .xls"
           type="file"
-          onChange={handleFileUpload}
+          onChange={(e) => {
+            handleFileUpload(e);
+          }}
           style={{ display: "none" }}
           id="upload-excel"
         />
@@ -95,10 +142,9 @@ const EmployeeUploadManager = () => {
         <IconButton
           onClick={handleDeleteAll}
           color="error"
-          sx={{ marginLeft: 2}}
+          sx={{ marginLeft: 2 }}
         >
-        <CancelPresentationTwoTone />
-
+          <CancelPresentationTwoTone />
         </IconButton>
         <Button
           variant="contained"
@@ -109,10 +155,7 @@ const EmployeeUploadManager = () => {
         >
           Upload to Database
         </Button>
-        <Typography
-          variant="h6"
-          sx={{ m: "15px 0 5px 20px" }}
-        >
+        <Typography variant="h6" sx={{ m: "15px 0 5px 20px" }}>
           {fileData.length > 0 ? "Viewing from File" : "Viewing Registered"}
         </Typography>
       </Paper>
@@ -121,8 +164,13 @@ const EmployeeUploadManager = () => {
           rows={fileData.length <= 0 ? data : fileData}
           columns={columns}
           // getRowId={(row) => row.id}
+          // error={error}
+          components={{
+            ErrorOverlay: CustomErrorOverlay,
+          }}
         />
       </Paper>
+      <ToastContainer />
     </Container>
   );
 };
