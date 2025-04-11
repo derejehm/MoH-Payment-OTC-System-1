@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
+<<<<<<< HEAD
 import { GetAllPaymentByDate, GetAllPaymentType } from "../../services/report_service";
 import { getTokenValue } from "../../services/user_service";
 import Box from '@mui/material/Box';
@@ -24,6 +25,19 @@ var paymentMethods = [
   // "CBHI",
   // "Free Service",
   // "Credit",
+=======
+import { GetAllPaymentByDate } from "../../services/report_service";
+import { getTokenValue } from "../../services/user_service";
+
+
+const paymentMethods = [
+  "All",
+  "CASH",
+  "Digital",
+  "CBHI",
+  "Free Service",
+  "Credit",
+>>>>>>> c1ec85df2d2f3aef5999b261ba4737b236f539ee
 ];
 
 const ReportPage = () => {
@@ -36,6 +50,7 @@ const ReportPage = () => {
   
   
 var tokenValue=getTokenValue();
+<<<<<<< HEAD
 
   useEffect( () =>  {
     
@@ -106,12 +121,23 @@ var tokenValue=getTokenValue();
       </StyledGridOverlay>
     );
   }
+=======
+
+  // useEffect(() => {
+  //   localStorage.setItem("hospitalPayments", JSON.stringify(payments));
+  // }, [payments]);
+
+>>>>>>> c1ec85df2d2f3aef5999b261ba4737b236f539ee
 
   useEffect(() => {
     setFilteredPayments(
       payments.filter(
         (payment) =>
+<<<<<<< HEAD
           (selectedMethod === "ALL" || payment.type === selectedMethod) 
+=======
+          (selectedMethod === "All" || payment.type === selectedMethod) 
+>>>>>>> c1ec85df2d2f3aef5999b261ba4737b236f539ee
       )
     );
   }, [selectedMethod, startDate, endDate, payments]);
@@ -124,7 +150,11 @@ var tokenValue=getTokenValue();
     return payments
       .filter(
         (payment) =>
+<<<<<<< HEAD
           (method === "ALL" || payment.type === method) 
+=======
+          (method === "All" || payment.type === method) 
+>>>>>>> c1ec85df2d2f3aef5999b261ba4737b236f539ee
       )
       .reduce((sum, payment) => sum + Number(payment.amount), 0); // Ensure amount is treated as a number
   };
@@ -155,15 +185,19 @@ var tokenValue=getTokenValue();
   ];
   const handleReportRequest = async () => {
     try {
+<<<<<<< HEAD
       if(startDate === "" || endDate === ""){
         alert("Please select start and end date");
         return;
       }
+=======
+>>>>>>> c1ec85df2d2f3aef5999b261ba4737b236f539ee
       const datas = await GetAllPaymentByDate({
         startDate,
         endDate,
         user: tokenValue.name,
       });
+<<<<<<< HEAD
 
       if(datas.length >0){
         setPayments(datas);
@@ -177,6 +211,16 @@ var tokenValue=getTokenValue();
 
       }
      
+=======
+      setPayments(datas);
+
+      setFilteredPayments(
+        payments.filter(
+          (payment) =>
+            (selectedMethod === "All" || payment.type === selectedMethod) 
+        )
+      );
+>>>>>>> c1ec85df2d2f3aef5999b261ba4737b236f539ee
   
     } catch (error) {
       console.error("Error fetching payments:", error);
