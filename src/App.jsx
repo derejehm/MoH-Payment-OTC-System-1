@@ -26,7 +26,7 @@ import {
 
 import { logout as logoutAction } from "./services/user_service.js";
 import { getTokenValue, getSession, logout } from "./services/user_service.js";
-import useTokenCheck from "./services/useTokenCheck.js";
+// import useTokenCheck from "./services/useTokenCheck.js";
 
 import {
   HospitalManagement,
@@ -189,7 +189,7 @@ const router = createBrowserRouter([
 const queryClient = new QueryClient();
 
 function App() {
-  useTokenCheck();
+  // useTokenCheck();
 
   return (
     <QueryClientProvider client={queryClient}>

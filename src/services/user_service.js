@@ -41,22 +41,7 @@ export function getSession() {
   if (!token) {
     return null;
   }
-
-  try {
-    const decoded = jwtDecode(token);
-    const currentTime = Math.floor(Date.now() / 1000);
-
-
-    // if (decoded.exp && decoded.exp < currentTime) {
-    //   logout()
-    //   return null; 
-    // }
-
     return token; 
-  } catch (error) {
-    logout()
-    return null;
-  }
 }
 
 export function getTokenValue(){

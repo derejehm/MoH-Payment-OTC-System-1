@@ -46,7 +46,6 @@ const PaymentManagementLists = () => {
       console.error(error.message);
     }
   };
-  
 
   // Fetch Payment Methods
   useEffect(() => {
@@ -80,8 +79,6 @@ const PaymentManagementLists = () => {
     );
   }, [refresh]);
 
-
-  
   // Fetch Organization with Agreement
   useEffect(() => {
     fetchData(
@@ -90,7 +87,6 @@ const PaymentManagementLists = () => {
       (item) => item.organization
     );
   }, [refresh]);
-
 
   const handleOpen = (category, item = "", id = null) => {
     setFormData({ category, name: item });
@@ -172,7 +168,7 @@ const PaymentManagementLists = () => {
           updatedBy: tokenvalue.name,
           updatedOn: new Date().toISOString(),
         },
- 
+
         "Organizations with Agreements": {
           id: Number(editId),
           organization: name,
@@ -205,7 +201,7 @@ const PaymentManagementLists = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-        if (response.status === 201  ||  response.status === 200) {
+        if (response.status === 201 || response.status === 200) {
           toast.success(`${category} added successfully!`);
           setRefresh((prev) => !prev);
           handleClose();
@@ -227,7 +223,7 @@ const PaymentManagementLists = () => {
         "Hospital Services": "/Lookup/payment-purpose",
         "Payment Methods": "/Lookup/payment-type",
         "CBHI Providers": "/Providers/delete-provider",
-        "Organizations with Agreements":"/Organiztion/Organization"
+        "Organizations with Agreements": "/Organiztion/Organization",
       };
 
       if (apiEndpoints[category]) {
@@ -291,7 +287,7 @@ const PaymentManagementLists = () => {
                   ? item.purpose
                   : category === "CBHI Providers"
                   ? item.provider
-                  : category ===  "Organizations with Agreements"
+                  : category === "Organizations with Agreements"
                   ? item.organization
                   : "",
             }))}
@@ -304,36 +300,37 @@ const PaymentManagementLists = () => {
               {
                 field: "actions",
                 headerName: "Actions",
-                renderCell: (params) => (
-                 ![
-                  "CASH",
-                  "ALL",
-                  "CBHI",
-                  "Credit",
-                  "Free of Charge",
-                  "Digital",
-                  "TeleBirr",
-                  "CBE Mobile Banking",
-                ].includes(params.row.name) &&
-                  <>
+                renderCell: (params) =>
+                  ![
+                    "CASH",
+                    "ALL",
+                    "CBHI",
+                    "Credit",
+                    "Free of Charge",
+                    "Digital",
+                    "TeleBirr",
+                    "CBE Mobile Banking",
+                    "BANK OF ABYSSINIA",
+                  ]
+                    .map((item) => item.toUpperCase())
+                    .includes(params.row.name.toUpperCase()) && (
+                    <>
+                      <IconButton
+                        onClick={() => {
+                          handleOpen(category, params.row.name, params.row.id);
+                        }}
+                      >
+                        <Edit />
+                      </IconButton>
 
-                    <IconButton
-                      onClick={() => {
-                        handleOpen(category, params.row.name, params.row.id);
-                      }}
-                    >
-                      <Edit />
-                    </IconButton>
-
-                    <IconButton
-                      onClick={() => handleDelete(category, params.row.id)}
-                      color="error"
-                    >
-                      <Delete />
-                    </IconButton>
-
-                  </>
-                ),
+                      <IconButton
+                        onClick={() => handleDelete(category, params.row.id)}
+                        color="error"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </>
+                  ),
                 flex: 0.5,
               },
             ]}
