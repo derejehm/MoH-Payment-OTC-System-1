@@ -18,7 +18,10 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import PersonIcon from "@mui/icons-material/Person";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { toast } from "react-toastify";
+import api from "../utils/api";
+import { getTokenValue } from "../services/user_service";
 
+const tokenvalue= getTokenValue()
 const formatter2 = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -39,7 +42,7 @@ const AgreementDialog = ({
 }) => {
   const [agreed, setAgreed] = useState(false);
   const [verifyEmp, setVerifyEmp] = useState(undefined);
-  const [empVerified,setEmpVerified] = useState("no")
+  const [empVerified, setEmpVerified] = useState("no");
   const [signature, setSignature] = useState("");
   const [empIdError, setEmpIdError] = useState("");
   const [empNameError, setEmpNameError] = useState("");
@@ -66,21 +69,34 @@ const AgreementDialog = ({
     if (name === "empName") {
       empNameValidation(value);
     }
-    setVerifyEmp(undefined)
-    setEmpVerified("no")
+    setVerifyEmp(undefined);
+    setEmpVerified("no");
   };
 
-  const handleVerify = async()=>{
-    try{
-      setEmpVerified("yes")
-      console.log("verify this>>",formData)
-    }catch(error)
-    {
-      console.error(error)
-      setVerifyEmp(undefined)
-      setEmpVerified('no')
+  const handleVerify = async () => {
+    try {
+       console.log("formData>>",formData)
+      const response = await api.put("/Collection/collector-check", {
+        employeeID: formData?.empId.toLocaleLowerCase(),
+        employeeName: formData?.empName,
+        user: tokenvalue?.name,
+      });
+        console.log(response?.data)
+      if(response.status === 200)
+      {
+        toast.success('Verified.')
+        setEmpVerified("yes");
+        setVerifyEmp(true)
+      }else{
+        setVerifyEmp(undefined)
+      }
+    } catch (error) {
+      console.error(error);
+      setVerifyEmp(undefined);
+      setEmpVerified("no");
+      toast.info(error?.response?.date || "Internal Server Error!")
     }
-  }
+  };
 
   const empIdValidation = (value) => {
     if (!/^TS[0-9]{1,}$/.test(value) || value.lengh < 4) {
@@ -103,9 +119,8 @@ const AgreementDialog = ({
   const handleSubmit = (e) => {
     // Handle agreement submission
     e.preventDefault();
-    if(empVerified === 'no' || empVerified.length <= 0)
-    {
-      toast.info('Please first verify the employee !!')
+    if (empVerified === "no" || empVerified.length <= 0) {
+      toast.info("Please first verify the employee !!");
       return;
     }
     onSubmit(formData);
@@ -130,9 +145,6 @@ const AgreementDialog = ({
       handleClose();
     }
   }, [open]);
-
-
-
 
   return (
     <>
@@ -169,7 +181,7 @@ const AgreementDialog = ({
               fullWidth
               label="Employee ID"
               name="empId"
-              type="password"
+              type="text"
               value={formData.empId.toUpperCase()}
               onChange={handleChange}
               margin="normal"
@@ -243,7 +255,7 @@ const AgreementDialog = ({
             </Button>
             <Box mt={2}>
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                Electronic Signature:
+                Time Signature:
               </Typography>
               <Button
                 variant="outlined"

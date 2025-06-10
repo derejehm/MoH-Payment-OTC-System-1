@@ -29,6 +29,10 @@ import AddPatientInfo from "../../components/AddPatientInfo";
 import { useLang } from "../../contexts/LangContext";
 import AddCBHIInfo from "../../components/AddCBHIInfo";
 import RenderPDF from "./RenderPDF";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { green, red, orange, grey } from "@mui/material/colors";
 
 const tokenvalue = getTokenValue();
 
@@ -147,6 +151,7 @@ const HospitalPayment = () => {
           const sortedPayment = await response?.data.sort(
             (a, b) => b.id - a.id
           );
+          // console.log("sortedPayment>>",sortedPayment)
           setPayments(sortedPayment);
         }
       } catch (error) {
@@ -445,11 +450,13 @@ const HospitalPayment = () => {
 
       if (response.status === 201) {
         try {
+          // To Add patient Name on the Reciept
           const add = await api.put("/Payment/patient-info", {
             patientCardNumber: formData?.cardNumber,
             hospital: tokenvalue?.Hospital,
             cashier: tokenvalue?.name,
           });
+
           const final = {
             ...newPayment,
             patientName: add?.data[0]?.patientName,
@@ -476,19 +483,28 @@ const HospitalPayment = () => {
           setIsPrintLoading(false);
         } catch (error) {
           console.error(error);
+          setIsPrintLoading(false);
         }
       }
     } catch (error) {
       console.error(error);
+      setIsPrintLoading(false);
     }
   };
 
   const generatePDF = (data, refNo) => {
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        orientation: "portrait", // Change orientation to portrait
+        unit: "mm",
+        format: "a4", // Use A4 size for portrait (better suited for standard receipts)
+      });
+  
       // Set initial position
       let yPos = 20;
-
+      const marginLeft = 20;
+      const marginRight = 190;
+  
       // Add Header
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
@@ -498,133 +514,120 @@ const HospitalPayment = () => {
       yPos += 8;
       doc.text("*************************", 105, yPos, { align: "center" });
       yPos += 10;
-
+  
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`${tokenvalue?.Hospital || "N/A"}`, 105, yPos, {
-        align: "center",
-      });
+      doc.text(`${tokenvalue?.Hospital || "N/A"}`, 105, yPos, { align: "center" });
       yPos += 8;
-
-      //Tiket Number
+  
+      // Receipt Number
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Recietp NO: ${refNo || "N/A"}`, 20, yPos);
+      doc.text(`Receipt NO: ${refNo || "N/A"}`, marginLeft, yPos);
       yPos += 6;
-
+  
       // Address and Date
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Address: Debre Brihan`, 20, yPos);
+      doc.text(`Address: Debre Brihan`, marginLeft, yPos);
       yPos += 6;
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPos);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, marginLeft, yPos);
       yPos += 6;
-      doc.text(`Cashier: ${tokenvalue?.name || "N/A"}`, 20, yPos);
+      doc.text(`Cashier: ${tokenvalue?.name || "N/A"}`, marginLeft, yPos);
       yPos += 10;
-
+  
       // Separator Line
       doc.setLineWidth(0.5);
-      doc.line(20, yPos, 190, yPos);
+      doc.line(marginLeft, yPos, marginRight, yPos);
       yPos += 10;
-
-      // Name
+  
+      // Patient Details
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`Patient Name:`, 20, yPos);
+      doc.text(`Patient Name:`, marginLeft, yPos);
       doc.setFont("helvetica", "normal");
-      doc.text(`${data?.patientName || "N/A"}`, 70, yPos);
+      doc.text(`${data?.patientName || "N/A"}`, marginLeft + 50, yPos);
       yPos += 8;
-
-      // Card Number
-      doc.setFontSize(12);
+  
       doc.setFont("helvetica", "bold");
-      doc.text(`Card Number:`, 20, yPos);
+      doc.text(`Card Number:`, marginLeft, yPos);
       doc.setFont("helvetica", "normal");
-      doc.text(`${data.cardNumber || "N/A"}`, 70, yPos);
+      doc.text(`${data.cardNumber || "N/A"}`, marginLeft + 50, yPos);
       yPos += 8;
-
-      // Payment Method
+  
       doc.setFont("helvetica", "bold");
-      doc.text(`Payment Method:`, 20, yPos);
+      doc.text(`Payment Method:`, marginLeft, yPos);
       doc.setFont("helvetica", "normal");
-      doc.text(`${data.method || "N/A"}`, 70, yPos);
+      doc.text(`${data.method || "N/A"}`, marginLeft + 50, yPos);
       yPos += 8;
-
-      // Additional Details
+  
+      // Additional Details based on Payment Method
       if (data.method.toUpperCase().includes("DIGITAL")) {
         doc.setFont("helvetica", "bold");
-        doc.text("Channel:", 20, yPos);
+        doc.text("Channel:", marginLeft, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.digitalChannel || "N/A"}`, 70, yPos);
+        doc.text(`${data.digitalChannel || "N/A"}`, marginLeft + 50, yPos);
         yPos += 8;
-
+  
         doc.setFont("helvetica", "bold");
-        doc.text("Transaction Ref No:", 20, yPos);
+        doc.text("Transaction Ref No:", marginLeft, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.trxref || "N/A"}`, 70, yPos);
+        doc.text(`${data.trxref || "N/A"}`, marginLeft + 50, yPos);
         yPos += 8;
       } else if (data.method.toUpperCase().includes("CBHI")) {
         doc.setFont("helvetica", "bold");
-        doc.text(`Woreda:`, 20, yPos);
+        doc.text(`Woreda:`, marginLeft, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.woreda || "N/A"}`, 70, yPos);
+        doc.text(`${data.woreda || "N/A"}`, marginLeft + 50, yPos);
         yPos += 8;
       } else if (data.method.toUpperCase().includes("CREDIT")) {
         doc.setFont("helvetica", "bold");
-        doc.text(`Organization:`, 20, yPos);
+        doc.text(`Organization:`, marginLeft, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.organization || "N/A"}`, 70, yPos);
+        doc.text(`${data.organization || "N/A"}`, marginLeft + 50, yPos);
         yPos += 8;
       }
-
+  
       // Separator Line
-      doc.line(20, yPos, 190, yPos);
+      doc.line(marginLeft, yPos, marginRight, yPos);
       yPos += 10;
-
+  
       // Items Table Header
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`Reason`, 20, yPos);
-      doc.text(`Price`, 160, yPos);
+      doc.text(`Reason`, marginLeft, yPos);
+      doc.text(`Price`, marginRight - 30, yPos);
       yPos += 8;
-
+  
       // Items Data
       doc.setFont("helvetica", "normal");
       data?.amount?.forEach((item) => {
-        doc.text(`${item.purpose}`, 20, yPos);
-        doc.text(
-          `${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`,
-          160,
-          yPos
-        );
+        doc.text(`${item.purpose}`, marginLeft, yPos);
+        doc.text(`${formatAccounting2(parseFloat(item.Amount).toFixed(2))}`, marginRight - 30, yPos);
         yPos += 8;
       });
-
+  
       // Separator Line
-      doc.line(20, yPos, 190, yPos);
+      doc.line(marginLeft, yPos, marginRight, yPos);
       yPos += 10;
-
+  
       // Total Amount
       const totalAmount = data?.amount
         ?.map((item) => item.Amount)
         .reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
-
+  
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(`Total In Figure`, 20, yPos);
-      doc.text(`${formatAccounting2(totalAmount.toFixed(2))}`, 160, yPos);
+      doc.text(`Total In Figure`, marginLeft, yPos);
+      doc.text(`${formatAccounting2(totalAmount.toFixed(2))}`, marginRight - 30, yPos);
       yPos += 10;
-      //
+  
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.text(`Total In Words : `, 20, yPos);
-      doc.text(
-        `${numberToWords.toWords(totalAmount.toFixed(2))} birr`,
-        51,
-        yPos
-      );
+      doc.text(`Total In Words : `, marginLeft, yPos);
+      doc.text(`${numberToWords.toWords(totalAmount.toFixed(2))} birr`, marginLeft + 31, yPos);
       yPos += 10;
-
+  
       // Thank You Message
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
@@ -634,19 +637,21 @@ const HospitalPayment = () => {
       yPos += 8;
       doc.text("*************************", 105, yPos, { align: "center" });
       yPos += 10;
-
+  
       // Barcode (Simulated with Number)
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
       doc.text("123456778963578021", 105, yPos, { align: "center" });
       yPos += 10;
-
+  
       // Save PDF
       doc.save("receipt.pdf");
     } catch (error) {
       console.error(error.message);
     }
   };
+  
+  
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -657,7 +662,7 @@ const HospitalPayment = () => {
     {
       field: "type",
       headerName: "Payment Method",
-      width: 150,
+      width: 120,
       renderCell: (params) => (
         <Typography
           color={
@@ -672,7 +677,24 @@ const HospitalPayment = () => {
         </Typography>
       ),
     },
-    { field: "purpose", headerName: "Reason", width: 200 },
+    { field: "purpose", headerName: "Reason", width: 190 },
+    {
+      field: "isCollected",
+      headerName: "Coll",
+      width: 10,
+      renderCell: (params) => {
+        const { isCollected, type } = params.row;
+        const isCash = type?.toLowerCase().includes("cash");
+
+        if (isCash && isCollected === 1) {
+          return <CheckCircleIcon sx={{ color: green[500] }} />;
+        } else if (isCash && isCollected !== 1) {
+          return <CancelIcon sx={{ color: orange[500] }} />; // or use WarningAmberIcon
+        } else {
+          return <RemoveCircleOutlineIcon sx={{ color: grey[500] }} />; // Not applicable
+        }
+      },
+    },
   ];
 
   const openNewTab = (id) => {
@@ -731,7 +753,6 @@ const HospitalPayment = () => {
         } else if (
           formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
         ) {
-
           const pdfBlob = new Blob([response?.data], {
             type: "application/pdf",
           });
@@ -745,8 +766,7 @@ const HospitalPayment = () => {
       if (
         formData.digitalChannel.toUpperCase().includes("CBE MOBILE BANKING")
       ) {
-      await generateAndOpenPDF(error)
-
+        await generateAndOpenPDF(error);
       }
     }
   };

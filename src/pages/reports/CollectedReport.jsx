@@ -21,7 +21,6 @@ const tokenvalue = getTokenValue();
 const CollectedReport = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [statusFilter, setStatusFilter] = useState("collected");
   const [showOnlyHighAmount, setShowOnlyHighAmount] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [data, setData] = useState([]);
@@ -76,10 +75,10 @@ const CollectedReport = () => {
   }, [showOnlyHighAmount]);
 
   const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const ws = XLSX.utils.json_to_sheet(filteredData.length > 0  ? filteredData:data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Filtered Report");
-    XLSX.writeFile(wb, `Payments_Report.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, `Collection Report of ${tokenvalue?.name}` );
+    XLSX.writeFile(wb, `Collection_Report from ${startDate} to ${endDate}.xlsx`);
   };
 
   return (

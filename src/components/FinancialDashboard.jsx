@@ -221,7 +221,7 @@ const FinancialDashboard = () => {
     try {
       const response = await api.post("/Collection/collection", {
         collectedBy: data.empName,
-        collecterID: data.empId,
+        collecterID: data.empId.toLocaleLowerCase(),
         collectedOn: data.signature,
         collectedAmount: selectedTransaction.collectedAmount,
         fromDate: selectedTransaction.fromDate,

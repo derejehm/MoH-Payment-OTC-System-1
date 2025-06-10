@@ -1,6 +1,6 @@
 import api from "../utils/api";
 import {jwtDecode} from "jwt-decode";
-
+import moment from "moment";
 const tokenName = ".otc";
 
 
@@ -44,14 +44,17 @@ export function getSession() {
 
   try {
     const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000; 
+    const currentTime = Math.floor(Date.now() / 1000);
 
-    if (decoded.exp && decoded.exp < currentTime) {
-      return null; 
-    }
+
+    // if (decoded.exp && decoded.exp < currentTime) {
+    //   logout()
+    //   return null; 
+    // }
 
     return token; 
   } catch (error) {
+    logout()
     return null;
   }
 }
